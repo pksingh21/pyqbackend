@@ -16,6 +16,7 @@ type User struct {
     Exams       []ExamUserPreference  `gorm:"foreignKey:UserID"`    
     OTP         string    
     OtpVerified bool      
+    Password    string
 }
 
 type ExamUserPreference struct {

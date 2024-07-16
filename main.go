@@ -33,6 +33,11 @@ func main() {
     {
         v1 := api.Group("/v1")
         {
+            v1.Post("/signup", handlers.SignUp)
+            v1.Post("/signin", handlers.SignIn)
+
+            // Protected routes with JWT middleware
+            v1.Use(handlers.JWTMiddleware())
             // User APIs
             v1.Post("/users", handlers.CreateUser)
             v1.Get("/users/:id", handlers.GetUser)
