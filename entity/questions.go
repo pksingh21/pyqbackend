@@ -1,19 +1,30 @@
 package entities
 
 import (
+	// "github.com/lib/pq"
 	"gorm.io/gorm"
+
 )
 
+// A Question in a Paper or a test
 type Question struct {
     gorm.Model
-    Topic           string   `json:"topic"`
-    Tags            []Tag    `json:"tags" gorm:"many2many:question_tags"`
-    QuestionData    string   `json:"questionData"`
-    Options         []Option `json:"options"`
-    Answers         []Answer `json:"answers"`
-    MultiCorrect    bool     `json:"multiCorrect"`
-    CorrectMarks    int      `json:"correctMarks"`
-    IncorrectMarks  int      `json:"incorrectMarks"`
-    DescriptionText string   `json:"descriptionText"`
-    DescImages      []string `json:"descImages"`
+    Id              uint
+    PaperID uint
+    Topic           string   
+    Tags            []Tag     `gorm:"foreignKey:QuestionID"`    
+    QuestionData    string   
+    Options         []Option   `gorm:"foreignKey:QuestionID"`    
+    Answers         []Answer   `gorm:"foreignKey:QuestionID"`    
+    MultiCorrect    bool     
+    CorrectMarks    int      
+    IncorrectMarks  int      
+    DescriptionText string   
+    DescImages      []DescriptionImagesURL `gorm:"foreignKey:QuestionID"`
+}
+
+type DescriptionImagesURL struct {
+    gorm.Model
+    QuestionID uint
+    URLLink    string
 }

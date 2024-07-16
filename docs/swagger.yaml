@@ -1,0 +1,804 @@
+basePath: /
+definitions:
+  entities.Answer:
+    type: object
+  entities.Option:
+    properties:
+      id:
+        type: integer
+      isCorrect:
+        type: boolean
+      questionID:
+        type: integer
+      text:
+        type: string
+      userChoiceID:
+        type: integer
+    type: object
+  entities.Paper:
+    type: object
+  entities.Tag:
+    type: object
+  entities.User:
+    type: object
+  github_com_pksingh21_pyqbackend_entity.Question:
+    type: object
+  github_com_pksingh21_pyqbackend_entity.Test:
+    type: object
+host: localhost:9999
+info:
+  contact:
+    email: fiber@swagger.io
+    name: API Support
+  description: This is a sample swagger for Fiber
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Fiber Example API
+  version: "1.0"
+paths:
+  /answers:
+    get:
+      description: Retrieve all answers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Answer'
+            type: array
+      summary: Get all answers
+      tags:
+      - answers
+    post:
+      consumes:
+      - application/json
+      description: Create a new answer with the input payload
+      parameters:
+      - description: Answer payload
+        in: body
+        name: answer
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Answer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.Answer'
+        "400":
+          description: Bad Request
+      summary: Create a new answer
+      tags:
+      - Answer
+  /answers/{id}:
+    delete:
+      description: Delete an answer by its ID
+      parameters:
+      - description: Answer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete an answer by ID
+      tags:
+      - answers
+    get:
+      description: Retrieve an answer by its ID
+      parameters:
+      - description: Answer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Answer'
+        "404":
+          description: Not Found
+      summary: Get an answer by ID
+      tags:
+      - answers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing answer by its ID
+      parameters:
+      - description: Answer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated answer data
+        in: body
+        name: answer
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Answer'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Answer'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update an answer by ID
+      tags:
+      - answers
+  /options:
+    get:
+      description: Retrieve all options
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Option'
+            type: array
+      summary: Get all options
+      tags:
+      - options
+    post:
+      consumes:
+      - application/json
+      description: Create a new option with provided details
+      parameters:
+      - description: Option data
+        in: body
+        name: option
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Option'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.Option'
+        "400":
+          description: Bad Request
+      summary: Create a new option
+      tags:
+      - options
+  /options/{id}:
+    delete:
+      description: Delete an option by its ID
+      parameters:
+      - description: Option ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete an option by ID
+      tags:
+      - options
+    get:
+      description: Retrieve an option by its ID
+      parameters:
+      - description: Option ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Option'
+        "404":
+          description: Not Found
+      summary: Get an option by ID
+      tags:
+      - options
+    put:
+      consumes:
+      - application/json
+      description: Update an existing option by its ID
+      parameters:
+      - description: Option ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated option data
+        in: body
+        name: option
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Option'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Option'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update an option by ID
+      tags:
+      - options
+  /papers:
+    get:
+      description: Retrieve all papers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Paper'
+            type: array
+      summary: Get all papers
+      tags:
+      - papers
+    post:
+      consumes:
+      - application/json
+      description: Create a new paper with provided details
+      parameters:
+      - description: Paper data
+        in: body
+        name: paper
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Paper'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.Paper'
+        "400":
+          description: Bad Request
+      summary: Create a new paper
+      tags:
+      - papers
+  /papers/{id}:
+    delete:
+      description: Delete a paper by its ID
+      parameters:
+      - description: Paper ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete a paper by ID
+      tags:
+      - papers
+    get:
+      description: Retrieve a paper by its ID
+      parameters:
+      - description: Paper ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Paper'
+        "404":
+          description: Not Found
+      summary: Get a paper by ID
+      tags:
+      - papers
+    put:
+      consumes:
+      - application/json
+      description: Update an existing paper by its ID
+      parameters:
+      - description: Paper ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated paper data
+        in: body
+        name: paper
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Paper'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Paper'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update a paper by ID
+      tags:
+      - papers
+  /questions:
+    get:
+      description: Retrieve all questions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+            type: array
+      summary: Get all questions
+      tags:
+      - questions
+    post:
+      consumes:
+      - application/json
+      description: Create a new question with provided details
+      parameters:
+      - description: Question data
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+        "400":
+          description: Bad Request
+      summary: Create a new question
+      tags:
+      - questions
+  /questions/{id}:
+    delete:
+      description: Delete a question by its ID
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete a question by ID
+      tags:
+      - questions
+    get:
+      description: Retrieve a question by its ID
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+        "404":
+          description: Not Found
+      summary: Get a question by ID
+      tags:
+      - questions
+    put:
+      consumes:
+      - application/json
+      description: Update an existing question by its ID
+      parameters:
+      - description: Question ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated question data
+        in: body
+        name: question
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update a question by ID
+      tags:
+      - questions
+  /tags:
+    get:
+      description: Retrieve all tags
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Tag'
+            type: array
+      summary: Get all tags
+      tags:
+      - tags
+    post:
+      consumes:
+      - application/json
+      description: Create a new tag with provided details
+      parameters:
+      - description: Tag data
+        in: body
+        name: tag
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Tag'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.Tag'
+        "400":
+          description: Bad Request
+      summary: Create a new tag
+      tags:
+      - tags
+  /tags/{id}:
+    delete:
+      description: Delete a tag by its ID
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete a tag by ID
+      tags:
+      - tags
+    get:
+      description: Retrieve a tag by its ID
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Tag'
+        "404":
+          description: Not Found
+      summary: Get a tag by ID
+      tags:
+      - tags
+    put:
+      consumes:
+      - application/json
+      description: Update an existing tag by its ID
+      parameters:
+      - description: Tag ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated tag data
+        in: body
+        name: tag
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Tag'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Tag'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update a tag by ID
+      tags:
+      - tags
+  /tests:
+    get:
+      description: Retrieve all tests
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+            type: array
+      summary: Get all tests
+      tags:
+      - tests
+    post:
+      consumes:
+      - application/json
+      description: Create a new test with provided details
+      parameters:
+      - description: Test data
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+        "400":
+          description: Bad Request
+      summary: Create a new test
+      tags:
+      - tests
+  /tests/{id}:
+    delete:
+      description: Delete a test by its ID
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete a test by ID
+      tags:
+      - tests
+    get:
+      description: Retrieve a test by its ID
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+        "404":
+          description: Not Found
+      summary: Get a test by ID
+      tags:
+      - tests
+    put:
+      consumes:
+      - application/json
+      description: Update an existing test by its ID
+      parameters:
+      - description: Test ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated test data
+        in: body
+        name: test
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Test'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update a test by ID
+      tags:
+      - tests
+  /users:
+    get:
+      description: Retrieve all users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.User'
+            type: array
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with provided details
+      parameters:
+      - description: User data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entities.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entities.User'
+        "400":
+          description: Bad Request
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Delete a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "404":
+          description: Not Found
+      summary: Delete a user by ID
+      tags:
+      - users
+    get:
+      description: Retrieve a user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.User'
+        "404":
+          description: Not Found
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated user data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/entities.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.User'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      summary: Update a user by ID
+      tags:
+      - users
+swagger: "2.0"

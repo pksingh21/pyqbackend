@@ -1,10 +1,10 @@
 package entities
 
-import "gorm.io/gorm"
-
+//Options for a given Question
 type Option struct {
-    gorm.Model
-    Text       string `json:"text"`
-    IsCorrect  bool   `json:"isCorrect"`
-    QuestionID uint   `json:"-"`
+    Id         uint
+    UserChoiceID uint
+    QuestionID uint
+    Text       string 
+    IsCorrect  bool   
 }

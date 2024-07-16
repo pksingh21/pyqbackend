@@ -1,23 +1,28 @@
 package entities
 
 import (
-    "gorm.io/gorm"
-    "time"
+	"time"
+
+	"gorm.io/gorm"
 )
 
+// Users can attempt test here
 type Test struct {
+    // Gorm Model
     gorm.Model
-    Paper      Paper     `json:"paper"`
-    Duration   int       `json:"duration"`
-    StartTime  time.Time `json:"startTime"`
-    CreationTime time.Time `json:"creationTime"`
-    UserChoices []UserChoice `json:"userChoices"`
+    Paper        Paper   `gorm:"foreignKey:TestID"`    
+    Duration     int         
+    StartTime    time.Time   
+    CreationTime time.Time   
+    UserChoices  []UserChoice `gorm:"foreignKey:TestID"`
 }
 
+// User's input choice
 type UserChoice struct {
-    QID     uint `json:"qId"`
-    Selected []Option `json:"selected"`
-    Seen    bool `json:"seen"`
-    Marked  bool `json:"marked"`
+    gorm.Model
+    TestID   uint     
+    QID      uint     
+    Selected []Option   `gorm:"foreignKey:UserChoiceID"`    
+    Seen     bool     
+    Marked   bool     
 }
-

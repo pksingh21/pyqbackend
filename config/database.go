@@ -1,11 +1,13 @@
 package config
 
 import (
-    "github.com/pksingh21/pyqbackend/entity"
-    "gorm.io/driver/postgres"
-    "gorm.io/gorm"
-    "github.com/joho/godotenv"
-    "os"
+	"fmt"
+	"os"
+
+	"github.com/joho/godotenv"
+	"github.com/pksingh21/pyqbackend/entity"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 var Database *gorm.DB
@@ -54,6 +56,7 @@ func AutoMigrateEntities(db *gorm.DB) error {
 
     // Auto migrate each entity
     for _, entity := range entities {
+        fmt.Println(entity,"entity in use")
         if err := db.AutoMigrate(entity); err != nil {
             return err
         }

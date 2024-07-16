@@ -1,90 +1,124 @@
 package handlers
 
 import (
-    "github.com/pksingh21/pyqbackend/config"
-    "github.com/pksingh21/pyqbackend/entity"
-    "github.com/gofiber/fiber/v2"
-    "time"
+	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/pksingh21/pyqbackend/config"
+	entities "github.com/pksingh21/pyqbackend/entity"
 )
 
-//{
-// "phoneNumber": "1234567890", // Phone number (string)
-// "name": "John Doe", // User's name
-// "email": "johndoe@example.com", // User's email address
-// "joinedDate": "2024-07-16T00:00:00Z", // ISO 8601 formatted date and time
-// "exams": ["AIIMS", "Exam2", "Exam3"], // Array of exams interested in
-// "otp": "123456", // OTP code (string)
-// "otpVerified": true // OTP verification status (boolean)
-//   }
-// CreateUser creates a new user
+// CreateUser godoc
+// @Summary Create a new user
+// @Description Create a new user with provided details
+// @Tags users
+// @Accept application/json
+// @Produce application/json
+// @Param user body entities.User true "User data"
+// @Success 201 {object} entities.User
+// @Failure 400
+// @Router /users [post]
 func CreateUser(c *fiber.Ctx) error {
-    user := new(entities.User)
+	user := new(entities.User)
 
-    if err := c.BodyParser(user); err != nil {
-        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-    }
+	if err := c.BodyParser(user); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 
-    // Set default values
-    user.JoinedDate = time.Now()
+	// Set default values
+	user.JoinedDate = time.Now()
 
-    config.Database.Create(&user)
-    return c.Status(fiber.StatusCreated).JSON(user)
+	config.Database.Create(&user)
+	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
-// GetUser retrieves a user by ID
+// GetUser godoc
+// @Summary Get a user by ID
+// @Description Retrieve a user by their ID
+// @Tags users
+// @Produce application/json
+// @Param id path int true "User ID"
+// @Success 200 {object} entities.User
+// @Failure 404
+// @Router /users/{id} [get]
 func GetUser(c *fiber.Ctx) error {
-    id := c.Params("id")
-    var user entities.User
+	id := c.Params("id")
+	var user entities.User
 
-    if err := config.Database.First(&user, id).Error; err != nil {
-        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-    }
+	if err := config.Database.First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+	}
 
-    return c.Status(fiber.StatusOK).JSON(user)
+	return c.Status(fiber.StatusOK).JSON(user)
 }
 
-// UpdateUser updates a user by ID
+// UpdateUser godoc
+// @Summary Update a user by ID
+// @Description Update an existing user by their ID
+// @Tags users
+// @Accept application/json
+// @Produce application/json
+// @Param id path int true "User ID"
+// @Param user body entities.User true "Updated user data"
+// @Success 200 {object} entities.User
+// @Failure 400
+// @Failure 404
+// @Router /users/{id} [put]
 func UpdateUser(c *fiber.Ctx) error {
-    id := c.Params("id")
-    var user entities.User
+	id := c.Params("id")
+	var user entities.User
 
-    if err := config.Database.First(&user, id).Error; err != nil {
-        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-    }
+	if err := config.Database.First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+	}
 
-    updatedUser := new(entities.User)
-    if err := c.BodyParser(updatedUser); err != nil {
-        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
-    }
+	updatedUser := new(entities.User)
+	if err := c.BodyParser(updatedUser); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+	}
 
-    // Update specific fields
-    user.Name = updatedUser.Name
-    user.Email = updatedUser.Email
-    user.Exams = updatedUser.Exams
-    user.OTP = updatedUser.OTP
-    user.OtpVerified = updatedUser.OtpVerified
+	// Update specific fields
+	user.Name = updatedUser.Name
+	user.Email = updatedUser.Email
+	user.Exams = updatedUser.Exams
+	user.OTP = updatedUser.OTP
+	user.OtpVerified = updatedUser.OtpVerified
 
-    config.Database.Save(&user)
-    return c.Status(fiber.StatusOK).JSON(user)
+	config.Database.Save(&user)
+	return c.Status(fiber.StatusOK).JSON(user)
 }
 
-// DeleteUser deletes a user by ID
+// DeleteUser godoc
+// @Summary Delete a user by ID
+// @Description Delete a user by their ID
+// @Tags users
+// @Produce application/json
+// @Param id path int true "User ID"
+// @Success 200 {string} string "OK"
+// @Failure 404
+// @Router /users/{id} [delete]
 func DeleteUser(c *fiber.Ctx) error {
-    id := c.Params("id")
-    var user entities.User
+	id := c.Params("id")
+	var user entities.User
 
-    if err := config.Database.First(&user, id).Error; err != nil {
-        return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-    }
+	if err := config.Database.First(&user, id).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+	}
 
-    config.Database.Delete(&user)
-    return c.SendStatus(fiber.StatusOK)
+	config.Database.Delete(&user)
+	return c.SendStatus(fiber.StatusOK)
 }
 
-// GetAllUsers retrieves all users
+// GetAllUsers godoc
+// @Summary Get all users
+// @Description Retrieve all users
+// @Tags users
+// @Produce application/json
+// @Success 200 {array} entities.User
+// @Router /users [get]
 func GetAllUsers(c *fiber.Ctx) error {
-    var users []entities.User
+	var users []entities.User
 
-    config.Database.Find(&users)
-    return c.Status(fiber.StatusOK).JSON(users)
+	config.Database.Find(&users)
+	return c.Status(fiber.StatusOK).JSON(users)
 }

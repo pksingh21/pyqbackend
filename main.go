@@ -2,16 +2,33 @@ package main
 
 import (
     "log"
-    "github.com/pksingh21/pyqbackend/config"
+    // "github.com/pksingh21/pyqbackend/config"
     "github.com/gofiber/fiber/v2"
     "github.com/pksingh21/pyqbackend/handler"
+    "github.com/gofiber/contrib/swagger"
 )
 
 
-
+// @title Fiber Example API
+// @version 1.0
+// @description This is a sample swagger for Fiber
+// @termsOfService http://swagger.io/terms/
+// @contact.name API Support
+// @contact.email fiber@swagger.io
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+// @host localhost:9999
+// @BasePath /
 func main() {
     app := fiber.New()
-    config.Connect();
+    // config.Connect();
+    cfg := swagger.Config{
+        BasePath: "/",
+        FilePath: "./docs/swagger.json",
+        Path:     "swagger",
+        Title:    "Swagger API Docs",
+    }
+    app.Use(swagger.New(cfg))
     api := app.Group("/api")
     {
         v1 := api.Group("/v1")

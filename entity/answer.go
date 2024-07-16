@@ -2,9 +2,11 @@ package entities
 
 import "gorm.io/gorm"
 
+// Answer represents an answer in the system
 type Answer struct {
+    // Gorm ORM Model
     gorm.Model
-    Text       string `json:"text"`
-    IsCorrect  bool   `json:"isCorrect"`
-    QuestionID uint   `json:"-"`
+    QuestionID uint   
+    Text       string 
+    IsCorrect  bool   
 }
