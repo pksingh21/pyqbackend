@@ -1,7 +1,7 @@
 package config
 
 import (
-    "github.com/pksingh21/pyqbackend/entities"
+    // "github.com/pksingh21/pyqbackend/entity"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
 	"github.com/joho/godotenv"
@@ -27,7 +27,7 @@ func Connect() error {
         panic(err)
     }
 
-    Database.AutoMigrate(&entities.Dog{})
+    // Database.AutoMigrate(&entities.Dog{})
 
     return nil
 }
