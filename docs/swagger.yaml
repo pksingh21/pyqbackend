@@ -1,6 +1,51 @@
 basePath: /
 definitions:
   entities.Answer:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      isCorrect:
+        type: boolean
+      questionID:
+        type: integer
+      text:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  entities.DescriptionImagesURL:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      questionID:
+        type: integer
+      updatedAt:
+        type: string
+      urllink:
+        type: string
+    type: object
+  entities.ExamUserPreference:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      examName:
+        type: string
+      id:
+        type: integer
+      updatedAt:
+        type: string
+      userID:
+        type: integer
     type: object
   entities.Option:
     properties:
@@ -16,14 +61,176 @@ definitions:
         type: integer
     type: object
   entities.Paper:
+    properties:
+      createdAt:
+        type: string
+      createdBy:
+        type: string
+      creationTime:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      isModule:
+        type: boolean
+      paperLength:
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.Question'
+        type: array
+      tags:
+        items:
+          $ref: '#/definitions/entities.Tag'
+        type: array
+      testID:
+        type: integer
+      title:
+        type: string
+      updatedAt:
+        type: string
     type: object
   entities.Tag:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      name:
+        type: string
+      paperID:
+        type: integer
+      questionID:
+        type: integer
+      type:
+        type: string
+      updatedAt:
+        type: string
     type: object
   entities.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      exams:
+        items:
+          $ref: '#/definitions/entities.ExamUserPreference'
+        type: array
+      id:
+        type: integer
+      joinedDate:
+        type: string
+      name:
+        type: string
+      otp:
+        type: string
+      otpVerified:
+        type: boolean
+      phoneNumber:
+        type: string
+      updatedAt:
+        type: string
     type: object
   github_com_pksingh21_pyqbackend_entity.Question:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/entities.Answer'
+        type: array
+      correctMarks:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      descImages:
+        items:
+          $ref: '#/definitions/entities.DescriptionImagesURL'
+        type: array
+      descriptionText:
+        type: string
+      id:
+        type: integer
+      incorrectMarks:
+        type: integer
+      multiCorrect:
+        type: boolean
+      options:
+        items:
+          $ref: '#/definitions/entities.Option'
+        type: array
+      paperID:
+        type: integer
+      questionData:
+        type: string
+      tags:
+        items:
+          $ref: '#/definitions/entities.Tag'
+        type: array
+      topic:
+        type: string
+      updatedAt:
+        type: string
     type: object
   github_com_pksingh21_pyqbackend_entity.Test:
+    properties:
+      createdAt:
+        type: string
+      creationTime:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      duration:
+        type: integer
+      id:
+        type: integer
+      paper:
+        $ref: '#/definitions/entities.Paper'
+      startTime:
+        type: string
+      updatedAt:
+        type: string
+      userChoices:
+        items:
+          $ref: '#/definitions/github_com_pksingh21_pyqbackend_entity.UserChoice'
+        type: array
+    type: object
+  github_com_pksingh21_pyqbackend_entity.UserChoice:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      marked:
+        type: boolean
+      qid:
+        type: integer
+      seen:
+        type: boolean
+      selected:
+        items:
+          $ref: '#/definitions/entities.Option'
+        type: array
+      testID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
     type: object
 host: localhost:9999
 info:

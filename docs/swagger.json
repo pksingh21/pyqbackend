@@ -1175,7 +1175,76 @@
     },
     "definitions": {
         "entities.Answer": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isCorrect": {
+                    "type": "boolean"
+                },
+                "questionID": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.DescriptionImagesURL": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "questionID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "urllink": {
+                    "type": "string"
+                }
+            }
+        },
+        "entities.ExamUserPreference": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "examName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
         },
         "entities.Option": {
             "type": "object",
@@ -1198,19 +1267,265 @@
             }
         },
         "entities.Paper": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "createdBy": {
+                    "type": "string"
+                },
+                "creationTime": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "isModule": {
+                    "type": "boolean"
+                },
+                "paperLength": {
+                    "type": "integer"
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_pksingh21_pyqbackend_entity.Question"
+                    }
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Tag"
+                    }
+                },
+                "testID": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
         },
         "entities.Tag": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "paperID": {
+                    "type": "integer"
+                },
+                "questionID": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
         },
         "entities.User": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "exams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.ExamUserPreference"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "joinedDate": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "otp": {
+                    "type": "string"
+                },
+                "otpVerified": {
+                    "type": "boolean"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
         },
         "github_com_pksingh21_pyqbackend_entity.Question": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Answer"
+                    }
+                },
+                "correctMarks": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "descImages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.DescriptionImagesURL"
+                    }
+                },
+                "descriptionText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "incorrectMarks": {
+                    "type": "integer"
+                },
+                "multiCorrect": {
+                    "type": "boolean"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Option"
+                    }
+                },
+                "paperID": {
+                    "type": "integer"
+                },
+                "questionData": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Tag"
+                    }
+                },
+                "topic": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
         },
         "github_com_pksingh21_pyqbackend_entity.Test": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "creationTime": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "paper": {
+                    "$ref": "#/definitions/entities.Paper"
+                },
+                "startTime": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userChoices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_pksingh21_pyqbackend_entity.UserChoice"
+                    }
+                }
+            }
+        },
+        "github_com_pksingh21_pyqbackend_entity.UserChoice": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "marked": {
+                    "type": "boolean"
+                },
+                "qid": {
+                    "type": "integer"
+                },
+                "seen": {
+                    "type": "boolean"
+                },
+                "selected": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entities.Option"
+                    }
+                },
+                "testID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "gorm.DeletedAt": {
+            "type": "object",
+            "properties": {
+                "time": {
+                    "type": "string"
+                },
+                "valid": {
+                    "description": "Valid is true if Time is not NULL",
+                    "type": "boolean"
+                }
+            }
         }
     }
 }
