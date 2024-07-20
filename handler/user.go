@@ -5,7 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/pksingh21/pyqbackend/config"
-	entities "github.com/pksingh21/pyqbackend/entity"
+	"github.com/pksingh21/pyqbackend/entity"
+	"gorm.io/gorm"
 )
 
 // CreateUser godoc
@@ -14,21 +15,25 @@ import (
 // @Tags users
 // @Accept application/json
 // @Produce application/json
-// @Param user body entities.User true "User data"
-// @Success 201 {object} entities.User
-// @Failure 400
+// @Param user body entity.User true "User data"
+// @Success 201 {object} entity.User
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /users [post]
 func CreateUser(c *fiber.Ctx) error {
 	user := new(entities.User)
 
 	if err := c.BodyParser(user); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
 	}
 
 	// Set default values
 	user.JoinedDate = time.Now()
 
-	config.Database.Create(&user)
+	if err := config.Database.Create(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create user", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
@@ -38,15 +43,19 @@ func CreateUser(c *fiber.Ctx) error {
 // @Tags users
 // @Produce application/json
 // @Param id path int true "User ID"
-// @Success 200 {object} entities.User
-// @Failure 404
+// @Success 200 {object} entity.User
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /users/{id} [get]
 func GetUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var user entities.User
 
 	if err := config.Database.First(&user, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(user)
@@ -59,22 +68,26 @@ func GetUser(c *fiber.Ctx) error {
 // @Accept application/json
 // @Produce application/json
 // @Param id path int true "User ID"
-// @Param user body entities.User true "Updated user data"
-// @Success 200 {object} entities.User
-// @Failure 400
-// @Failure 404
+// @Param user body entity.User true "Updated user data"
+// @Success 200 {object} entity.User
+// @Failure 400 {object} fiber.Map
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /users/{id} [put]
 func UpdateUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var user entities.User
 
 	if err := config.Database.First(&user, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	updatedUser := new(entities.User)
 	if err := c.BodyParser(updatedUser); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
 	}
 
 	// Update specific fields
@@ -84,7 +97,10 @@ func UpdateUser(c *fiber.Ctx) error {
 	user.OTP = updatedUser.OTP
 	user.OtpVerified = updatedUser.OtpVerified
 
-	config.Database.Save(&user)
+	if err := config.Database.Save(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update user", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(user)
 }
 
@@ -95,17 +111,24 @@ func UpdateUser(c *fiber.Ctx) error {
 // @Produce application/json
 // @Param id path int true "User ID"
 // @Success 200 {string} string "OK"
-// @Failure 404
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /users/{id} [delete]
 func DeleteUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var user entities.User
 
 	if err := config.Database.First(&user, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
-	config.Database.Delete(&user)
+	if err := config.Database.Delete(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete user", "message": err.Error()})
+	}
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
@@ -114,11 +137,15 @@ func DeleteUser(c *fiber.Ctx) error {
 // @Description Retrieve all users
 // @Tags users
 // @Produce application/json
-// @Success 200 {array} entities.User
+// @Success 200 {array} entity.User
+// @Failure 500 {object} fiber.Map
 // @Router /users [get]
 func GetAllUsers(c *fiber.Ctx) error {
 	var users []entities.User
 
-	config.Database.Find(&users)
+	if err := config.Database.Find(&users).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(users)
 }

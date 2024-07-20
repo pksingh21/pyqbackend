@@ -2,7 +2,7 @@ package main
 
 import (
     "log"
-    // "github.com/pksingh21/pyqbackend/config"
+    "github.com/pksingh21/pyqbackend/config"
     "github.com/gofiber/fiber/v2"
     "github.com/pksingh21/pyqbackend/handler"
     "github.com/gofiber/contrib/swagger"
@@ -21,7 +21,7 @@ import (
 // @BasePath /
 func main() {
     app := fiber.New()
-    // config.Connect();
+    config.Connect();
     cfg := swagger.Config{
         BasePath: "/",
         FilePath: "./docs/swagger.json",
@@ -37,7 +37,7 @@ func main() {
             v1.Post("/signin", handlers.SignIn)
 
             // Protected routes with JWT middleware
-            v1.Use(handlers.JWTMiddleware())
+            // v1.Use(handlers.JWTMiddleware())
             // User APIs
             v1.Post("/users", handlers.CreateUser)
             v1.Get("/users/:id", handlers.GetUser)

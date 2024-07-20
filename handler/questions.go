@@ -3,7 +3,8 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/pksingh21/pyqbackend/config"
-	entities "github.com/pksingh21/pyqbackend/entity"
+	"github.com/pksingh21/pyqbackend/entity"
+	"gorm.io/gorm"
 )
 
 // CreateQuestion godoc
@@ -12,18 +13,22 @@ import (
 // @Tags questions
 // @Accept application/json
 // @Produce application/json
-// @Param question body entities.Question true "Question data"
-// @Success 201 {object} entities.Question
-// @Failure 400
+// @Param question body entity.Question true "Question data"
+// @Success 201 {object} entity.Question
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /questions [post]
 func CreateQuestion(c *fiber.Ctx) error {
 	question := new(entities.Question)
 
 	if err := c.BodyParser(question); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
 	}
 
-	config.Database.Create(&question)
+	if err := config.Database.Create(&question).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create question", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(question)
 }
 
@@ -33,15 +38,19 @@ func CreateQuestion(c *fiber.Ctx) error {
 // @Tags questions
 // @Produce application/json
 // @Param id path int true "Question ID"
-// @Success 200 {object} entities.Question
-// @Failure 404
+// @Success 200 {object} entity.Question
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /questions/{id} [get]
 func GetQuestion(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var question entities.Question
 
 	if err := config.Database.Preload("Tags").First(&question, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(question)
@@ -54,22 +63,26 @@ func GetQuestion(c *fiber.Ctx) error {
 // @Accept application/json
 // @Produce application/json
 // @Param id path int true "Question ID"
-// @Param question body entities.Question true "Updated question data"
-// @Success 200 {object} entities.Question
-// @Failure 400
-// @Failure 404
+// @Param question body entity.Question true "Updated question data"
+// @Success 200 {object} entity.Question
+// @Failure 400 {object} fiber.Map
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /questions/{id} [put]
 func UpdateQuestion(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var question entities.Question
 
 	if err := config.Database.First(&question, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	updatedQuestion := new(entities.Question)
 	if err := c.BodyParser(updatedQuestion); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
 	}
 
 	// Update specific fields
@@ -81,10 +94,12 @@ func UpdateQuestion(c *fiber.Ctx) error {
 	question.CorrectMarks = updatedQuestion.CorrectMarks
 	question.IncorrectMarks = updatedQuestion.IncorrectMarks
 	question.DescriptionText = updatedQuestion.DescriptionText
-	// question.DescImages = updatedQuestion.DescImages
 	question.Tags = updatedQuestion.Tags
 
-	config.Database.Save(&question)
+	if err := config.Database.Save(&question).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update question", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(question)
 }
 
@@ -95,17 +110,24 @@ func UpdateQuestion(c *fiber.Ctx) error {
 // @Produce application/json
 // @Param id path int true "Question ID"
 // @Success 200 {string} string "OK"
-// @Failure 404
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /questions/{id} [delete]
 func DeleteQuestion(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var question entities.Question
 
 	if err := config.Database.First(&question, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Question not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
-	config.Database.Delete(&question)
+	if err := config.Database.Delete(&question).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete question", "message": err.Error()})
+	}
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
@@ -114,11 +136,15 @@ func DeleteQuestion(c *fiber.Ctx) error {
 // @Description Retrieve all questions
 // @Tags questions
 // @Produce application/json
-// @Success 200 {array} entities.Question
+// @Success 200 {array} entity.Question
+// @Failure 500 {object} fiber.Map
 // @Router /questions [get]
 func GetAllQuestions(c *fiber.Ctx) error {
 	var questions []entities.Question
 
-	config.Database.Preload("Tags").Find(&questions)
+	if err := config.Database.Preload("Tags").Find(&questions).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(questions)
 }

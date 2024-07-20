@@ -3,7 +3,8 @@ package handlers
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/pksingh21/pyqbackend/config"
-	entities "github.com/pksingh21/pyqbackend/entity"
+	"github.com/pksingh21/pyqbackend/entity"
+	"gorm.io/gorm"
 )
 
 // CreatePaper godoc
@@ -14,16 +15,20 @@ import (
 // @Produce application/json
 // @Param paper body entities.Paper true "Paper data"
 // @Success 201 {object} entities.Paper
-// @Failure 400
+// @Failure 400 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /papers [post]
 func CreatePaper(c *fiber.Ctx) error {
 	paper := new(entities.Paper)
 
 	if err := c.BodyParser(paper); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
+	}
+	
+	if err := config.Database.Create(&paper).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to create paper", "message": err.Error()})
 	}
 
-	config.Database.Create(&paper)
 	return c.Status(fiber.StatusCreated).JSON(paper)
 }
 
@@ -34,14 +39,18 @@ func CreatePaper(c *fiber.Ctx) error {
 // @Produce application/json
 // @Param id path int true "Paper ID"
 // @Success 200 {object} entities.Paper
-// @Failure 404
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /papers/{id} [get]
 func GetPaper(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var paper entities.Paper
 
 	if err := config.Database.First(&paper, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(paper)
@@ -56,31 +65,37 @@ func GetPaper(c *fiber.Ctx) error {
 // @Param id path int true "Paper ID"
 // @Param paper body entities.Paper true "Updated paper data"
 // @Success 200 {object} entities.Paper
-// @Failure 400
-// @Failure 404
+// @Failure 400 {object} fiber.Map
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /papers/{id} [put]
 func UpdatePaper(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var paper entities.Paper
 
 	if err := config.Database.First(&paper, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
 	updatedPaper := new(entities.Paper)
 	if err := c.BodyParser(updatedPaper); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid input", "message": err.Error()})
 	}
 
 	// Update specific fields
 	paper.Title = updatedPaper.Title
-	// paper.Tags = updatedPaper.Tags
 	paper.CreationTime = updatedPaper.CreationTime
 	paper.IsModule = updatedPaper.IsModule
 	paper.CreatedBy = updatedPaper.CreatedBy
 	paper.PaperLength = updatedPaper.PaperLength
 
-	config.Database.Save(&paper)
+	if err := config.Database.Save(&paper).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to update paper", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(paper)
 }
 
@@ -91,17 +106,24 @@ func UpdatePaper(c *fiber.Ctx) error {
 // @Produce application/json
 // @Param id path int true "Paper ID"
 // @Success 200 {string} string "OK"
-// @Failure 404
+// @Failure 404 {object} fiber.Map
+// @Failure 500 {object} fiber.Map
 // @Router /papers/{id} [delete]
 func DeletePaper(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var paper entities.Paper
 
 	if err := config.Database.First(&paper, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Paper not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
 	}
 
-	config.Database.Delete(&paper)
+	if err := config.Database.Delete(&paper).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete paper", "message": err.Error()})
+	}
+
 	return c.SendStatus(fiber.StatusOK)
 }
 
@@ -111,10 +133,14 @@ func DeletePaper(c *fiber.Ctx) error {
 // @Tags papers
 // @Produce application/json
 // @Success 200 {array} entities.Paper
+// @Failure 500 {object} fiber.Map
 // @Router /papers [get]
 func GetAllPapers(c *fiber.Ctx) error {
 	var papers []entities.Paper
 
-	config.Database.Find(&papers)
+	if err := config.Database.Find(&papers).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error", "message": err.Error()})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(papers)
 }

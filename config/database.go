@@ -34,10 +34,10 @@ func Connect() error {
     }
 
     // Auto migrate all entities
-    err = AutoMigrateEntities(Database)
-    if err != nil {
-        panic(err)
-    }
+    // err = AutoMigrateEntities(Database)
+    // if err != nil {
+    //     panic(err)
+    // }
 
     return nil
 }
