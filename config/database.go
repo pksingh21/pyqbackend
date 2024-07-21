@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/pksingh21/pyqbackend/entity"
+	"github.com/pksingh21/pyqbackend/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -13,54 +13,55 @@ import (
 var Database *gorm.DB
 
 func Connect() error {
-    var err error
+	var err error
 
-    // Load environment variables
-    err = godotenv.Load()
-    if err != nil {
-        panic(err)
-    }
+	// Load environment variables
+	err = godotenv.Load()
+	if err != nil {
+		panic(err)
+	}
 
-    // Get PostgreSQL URI from environment
-    DATABASE_URI := os.Getenv("POSTGRES_URI")
+	// Get PostgreSQL URI from environment
+	DATABASE_URI := os.Getenv("POSTGRES_URI")
 
-    // Connect to the database
-    Database, err = gorm.Open(postgres.Open(DATABASE_URI), &gorm.Config{
-        SkipDefaultTransaction: true,
-        PrepareStmt:            true,
-    })
-    if err != nil {
-        panic(err)
-    }
+	// Connect to the database
+	Database, err = gorm.Open(postgres.Open(DATABASE_URI), &gorm.Config{
+		SkipDefaultTransaction: true,
+		PrepareStmt:            true,
+	})
+	if err != nil {
+		panic(err)
+	}
 
-    // Auto migrate all entities
-    // err = AutoMigrateEntities(Database)
-    // if err != nil {
-    //     panic(err)
-    // }
+	// Auto migrate all entities
+	err = AutoMigrateEntities(Database)
+	if err != nil {
+		panic(err)
+	}
 
-    return nil
+	return nil
 }
 
 func AutoMigrateEntities(db *gorm.DB) error {
-    // List of all entities to migrate
-    entities := []interface{}{
-        &entities.User{},
-        &entities.Test{},
-        &entities.Option{},
-        &entities.Answer{},
-        &entities.Paper{},
-        &entities.Question{},
-        &entities.Tag{},
-    }
+	// List of all entities to migrate
+	entities := []interface{}{
+		&models.Paper{},
+        &models.PaperQuestion{},
+        &models.Question{},
+         &models.QuestionChoice{},
+          &models.Tag{},
+           &models.Test{},
+            &models.TestQuestionStatus{},
+             &models.User{},
+	}
 
-    // Auto migrate each entity
-    for _, entity := range entities {
-        fmt.Println(entity,"entity in use")
-        if err := db.AutoMigrate(entity); err != nil {
-            return err
-        }
-    }
+	// Auto migrate each entity
+	for _, entity := range entities {
+		fmt.Println(entity, "entity in use")
+		if err := db.AutoMigrate(entity); err != nil {
+			return err
+		}
+	}
 
-    return nil
+	return nil
 }
