@@ -18,7 +18,7 @@ const protect = catchAsync(async (req: Request, res: Response, next: NextFunctio
     if (!token) return next(new AppError('A token is required for authentication', 403));
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { email: string };
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as { email: string };
         req.user = decoded as User;
     } catch (err) {
         return next(new AppError('Invalid token', 401));
@@ -39,7 +39,7 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
     }
 
     if (bcrypt.compareSync(password, user.password)) {
-        const token = jwt.sign({ email }, process.env.JWT_SECRET as string, {
+        const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY as string, {
             expiresIn: '1h',
         });
 
