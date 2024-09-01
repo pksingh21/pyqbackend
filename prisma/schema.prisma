@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tag {
+  id             Int       @id @default(autoincrement())
+  name           String
+  type           TagType
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+
+  Users          User[]    @relation("UserInterestedTags")
+  Questions      Question[] @relation("QuestionTags")
+  Papers         Paper[]   @relation("PaperTags")
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  phoneNumber    String
+  name           String
+  email          String    @unique
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  interested     Tag[]     @relation("UserInterestedTags", references: [id])
+
+  createdTags    Tag[]
+  createdQuestions Question[]
+  createdQuestionChoices QuestionChoice[]
+  createdPapers  Paper[]
+  createdPaperQuestions PaperQuestion[]
+  createdTests   Test[]
+  createdTestQuestionStatuses TestQuestionStatus[]
+}
+
+model Question {
+  id             Int       @id @default(autoincrement())
+  text           String
+  images         String[]
+  choices        QuestionChoice[]
+  isMultiCorrect Boolean
+  correctMarks   Int
+  incorrectMarks Int
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  tags           Tag[]     @relation("QuestionTags", references: [id])
+}
+
+model QuestionChoice {
+  id             Int       @id @default(autoincrement())
+  text           String
+  isAnswer       Boolean
+  choiceOrder    Int
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  questionId     Int
+  question       Question  @relation(fields: [questionId], references: [id])
+}
+
+model Paper {
+  id             Int       @id @default(autoincrement())
+  title          String
+  isModule       Boolean
+  duration       Int
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  tags           Tag[]     @relation("PaperTags", references: [id])
+  questions      PaperQuestion[]
+}
+
+model PaperQuestion {
+  id             Int       @id @default(autoincrement())
+  questionOrder  Int
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  paperId        Int
+  paper          Paper     @relation(fields: [paperId], references: [id])
+  questionId     Int
+  question       Question  @relation(fields: [questionId], references: [id])
+}
+
+model Test {
+  id             Int       @id @default(autoincrement())
+  duration       Int
+  startTime      DateTime
+  elapsedTime    Int
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  paperId        Int
+  paper          Paper     @relation(fields: [paperId], references: [id])
+  questionStatuses TestQuestionStatus[]
+}
+
+model TestQuestionStatus {
+  id             Int       @id @default(autoincrement())
+  status         Status
+  createdAt      DateTime  @default(now())
+  lastUpdatedAt  DateTime  @updatedAt
+  createdById    Int
+  createdBy      User      @relation(fields: [createdById], references: [id])
+  testId         Int
+  test           Test      @relation(fields: [testId], references: [id])
+  questionId     Int
+  question       Question  @relation(fields: [questionId], references: [id])
+  choices        QuestionChoice[]
+}
+
+enum TagType {
+  MODULE
+  SUBJECT
+  TOPIC
+}
+
+enum Status {
+  UNANSWERED
+  ANSWERED
+  REVIEW
+}
+
