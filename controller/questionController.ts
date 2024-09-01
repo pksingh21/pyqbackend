@@ -55,6 +55,35 @@ const updateQuestion = catchAsync(async (req: Request, res: Response, next: Next
     res.status(200).json({ message: 'Question updated', question: updatedQuestion });
 });
 
+const updateQuestionChoiceForQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params; // id of the question
+    const { choiceIds }: { choiceIds?: number[] } = req.body;
+
+    // Fetch the existing Question to ensure it exists
+    const existingQuestion = await prisma.question.findUnique({
+        where: { id: Number(id) },
+        include: { choices: true } // Include existing choices
+    });
+
+    if (!existingQuestion) {
+        return next(new AppError('Question not found', 404));
+    }
+
+
+    // Perform the update
+    const updatedQuestion = await prisma.question.update({
+        where: { id: Number(id) },
+        data: {
+            choices: {
+                set: choiceIds ? choiceIds.map(choiceId => ({ id: choiceId })) : [] // 'set' will replace existing choices with new ones
+            }
+        }
+    });
+
+    res.status(200).json({ message: 'Question choices updated', question: updatedQuestion });
+});
+
+
 const deleteQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
@@ -65,4 +94,4 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response, next: Next
     res.status(204).send();
 });
 
-export { createQuestion, getQuestion, updateQuestion, deleteQuestion };
+export { createQuestion, getQuestion, updateQuestion, deleteQuestion, updateQuestionChoiceForQuestion };

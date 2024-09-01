@@ -5,10 +5,18 @@ import path from 'path';
 
 
 import globalErrorHandler from './controller/errorController';
+
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes'
 import tagRoutes from "./routes/tagRoutes"
 import questionsRoutes from "./routes/questionRoutes"
+import questionChoiceRoutes from './routes/questionChoiceRoutes'
+import testRoutes from './routes/testRoutes'
+import paperQuestionChoiceRoutes from './routes/paperQuestionsRoutes'
+import paperRoutes from './routes/paperRoutes'
+import testQuestionStatusRoutes from './routes/testQuestionStatusRoutes'
+
+
 import requestLogger from './utils/requestLogger';
 import AppError from './utils/appError';
 
@@ -41,6 +49,12 @@ app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/tags',tagRoutes);
 app.use('/api/question',questionsRoutes);
+app.use('/api/questionChoice',questionChoiceRoutes);
+app.use('/api/test',testRoutes);
+app.use('/api/paper',paperRoutes)
+app.use('/api/paperQuestionChoice',paperQuestionChoiceRoutes)
+app.use('/api/testQuestionStatusRoutes.ts',testQuestionStatusRoutes)
+
 
 // Serve the React frontend
 app.get('*', (req: Request, res: Response) => {
