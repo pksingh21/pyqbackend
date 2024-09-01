@@ -7,6 +7,8 @@ import path from 'path';
 import globalErrorHandler from './controller/errorController';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes'
+import tagRoutes from "./routes/tagRoutes"
+import questionsRoutes from "./routes/questionRoutes"
 import requestLogger from './utils/requestLogger';
 import AppError from './utils/appError';
 
@@ -36,7 +38,9 @@ if (process.env.USE_CORS) {
 }
 
 app.use('/api/auth', authRoutes);
-app.use('/api/user', userRoutes)
+app.use('/api/user', userRoutes);
+app.use('/api/tags',tagRoutes);
+app.use('/api/question',questionsRoutes);
 
 // Serve the React frontend
 app.get('*', (req: Request, res: Response) => {
