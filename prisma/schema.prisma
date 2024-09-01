@@ -34,7 +34,8 @@ model User {
   email          String    @unique
   createdAt      DateTime  @default(now())
   lastUpdatedAt  DateTime  @updatedAt
-  interested     Tag[]     @relation("UserInterestedTags", references: [id])
+  interested     Tag[]     @relation("UserInterestedTags")
+  password       String
 
   createdTags    Tag[]
   createdQuestions Question[]
@@ -57,7 +58,10 @@ model Question {
   lastUpdatedAt  DateTime  @updatedAt
   createdById    Int
   createdBy      User      @relation(fields: [createdById], references: [id])
-  tags           Tag[]     @relation("QuestionTags", references: [id])
+  tags           Tag[]     @relation("QuestionTags")
+  
+  PaperQuestions PaperQuestion[]
+  TestStatuses   TestQuestionStatus[]
 }
 
 model QuestionChoice {
@@ -71,6 +75,8 @@ model QuestionChoice {
   createdBy      User      @relation(fields: [createdById], references: [id])
   questionId     Int
   question       Question  @relation(fields: [questionId], references: [id])
+  
+  TestStatuses   TestQuestionStatus[]
 }
 
 model Paper {
@@ -82,8 +88,10 @@ model Paper {
   lastUpdatedAt  DateTime  @updatedAt
   createdById    Int
   createdBy      User      @relation(fields: [createdById], references: [id])
-  tags           Tag[]     @relation("PaperTags", references: [id])
+  tags           Tag[]     @relation("PaperTags")
   questions      PaperQuestion[]
+  
+  Tests          Test[]
 }
 
 model PaperQuestion {
@@ -138,4 +146,3 @@ enum Status {
   ANSWERED
   REVIEW
 }
-
