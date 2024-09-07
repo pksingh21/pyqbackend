@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { createQuestion, deleteQuestion, updateQuestion, getQuestion, updateQuestionChoiceForQuestion } from '../controller/questionController';
+import {
+  createQuestion,
+  deleteQuestion,
+  updateQuestion,
+  getQuestion,
+  updateQuestionChoiceForQuestion,
+} from '../controller/questionController';
 import { protect } from '../controller/authController';
 
 const router = Router();
@@ -13,6 +19,6 @@ router.post('/', createQuestion);
 router.get('/:id', getQuestion);
 router.patch('/:id', updateQuestion);
 router.delete('/:id', deleteQuestion);
-router.post('/questionChoice', updateQuestionChoiceForQuestion)
+router.post('/questionChoice', updateQuestionChoiceForQuestion);
 
 export default router;

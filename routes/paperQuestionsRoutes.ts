@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { createPaperQuestion, deletePaperQuestion, updatePaperQuestion, getPaperQuestion } from '../controller/paperQuestionsController';
+import {
+  createPaperQuestion,
+  deletePaperQuestion,
+  updatePaperQuestion,
+  getPaperQuestion,
+} from '../controller/paperQuestionsController';
 import { protect } from '../controller/authController';
 
 const router = Router();

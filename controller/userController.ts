@@ -79,26 +79,25 @@ const updateTagsForUser = catchAsync(async (req: Request, res: Response, next: N
 
   // Fetch the existing User to ensure they exist
   const existingUser = await prisma.user.findUnique({
-      where: { id: Number(id) },
+    where: { id: Number(id) },
   });
 
   if (!existingUser) {
-      return next(new AppError('User not found', 404));
+    return next(new AppError('User not found', 404));
   }
 
   // Perform the update
   const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
-      data: {
-        interested : {
-          set : tagIds ? tagIds.map(tagId => ({ id: tagId })) : [] // 'set' will replace existing tags with new ones
-        }
-      }
+    where: { id: Number(id) },
+    data: {
+      interested: {
+        set: tagIds ? tagIds.map((tagId) => ({ id: tagId })) : [], // 'set' will replace existing tags with new ones
+      },
+    },
   });
 
   res.status(200).json({ message: 'User tags updated', user: updatedUser });
 });
-
 
 // Delete a user by ID
 const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

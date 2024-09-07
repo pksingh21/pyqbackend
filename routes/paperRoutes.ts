@@ -13,6 +13,6 @@ router.post('/', createPaper);
 router.get('/:id', getPaper);
 router.patch('/:id', updatePaper);
 router.delete('/:id', deletePaper);
-router.post('/tags', updateTagsForPaper)
+router.post('/tags', updateTagsForPaper);
 
 export default router;

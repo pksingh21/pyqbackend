@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { createQuestionChoice, deleteQuestionChoice, updateQuestionChoice, getQuestionChoice } from '../controller/questionChoiceController';
+import {
+  createQuestionChoice,
+  deleteQuestionChoice,
+  updateQuestionChoice,
+  getQuestionChoice,
+} from '../controller/questionChoiceController';
 import { protect } from '../controller/authController';
 
 const router = Router();

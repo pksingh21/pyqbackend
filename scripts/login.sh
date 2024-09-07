@@ -10,7 +10,8 @@ curl -s -X POST $LOGIN_URL \
   -H "Content-Type: application/json" \
   -d "$LOGIN_DATA" \
   -c $COOKIE_FILE \
-  -o response.json
+  -o response.json \
+  -w "%{http_code}\n"
 
 # Output the response
 cat response.json
