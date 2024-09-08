@@ -34,35 +34,25 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
 
   const decodedToken = await auth.verifyIdToken(idToken);
 
-  const { uid } = decodedToken;
-
-  // TODO: check for user with 'uid', and create if not present
-
-  const { email, password } = req.body;
+  const { uid, phone_number } = decodedToken;
 
   const user: User | null = await prisma.user.findUnique({
-    where: { email },
+    where: { uuid: String(uid), phoneNumber: String(phone_number) },
   });
 
   if (!user) {
-    return next(new AppError('Invalid credentials', 401));
-  }
-
-  if (bcrypt.compareSync(password, user.password)) {
-    const token = jwt.sign({ email }, process.env.JWT_SECRET_KEY as string, {
-      expiresIn: '1h',
-    });
-
-    res.cookie('auth_token', token, {
-      httpOnly: true,
-      maxAge: 3600000,
-      secure: process.env.NODE_ENV === 'production',
-    });
-
-    res.status(200).json({ message: 'Logged in successfully', user });
+    // create the user if user doesn't exist
+    const newUser = await prisma.user.create({
+      data: {
+        uuid: String(uid),
+        phoneNumber: String(phone_number)
+      }
+    })
+    res.status(201).json({ message: "User Created successfully ", newUser })
   } else {
-    return next(new AppError('Invalid credentials', 401));
+    res.status(200).json({ message: "User found!!", user });
   }
+
 });
 
 const getLoginStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {

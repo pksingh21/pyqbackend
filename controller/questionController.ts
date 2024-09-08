@@ -17,7 +17,9 @@ const createQuestion = catchAsync(async (req: Request, res: Response, next: Next
       correctMarks: content.correctMarks,
       incorrectMarks: content.incorrectMarks,
       createdBy: {
-        connect: user,
+        connect: {
+          uuid: user.uuid
+        }
       },
     },
   });

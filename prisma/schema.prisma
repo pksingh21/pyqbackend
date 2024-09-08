@@ -29,13 +29,14 @@ model Tag {
 
 model User {
   id            Int      @id @default(autoincrement())
+  uuid          String   @unique @default(uuid()) 
   phoneNumber   String
-  name          String
-  email         String   @unique
+  name          String?
+  email         String?   @unique
   createdAt     DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt
   interested    Tag[]    @relation("UserInterestedTags")
-  password      String
+  password      String?
   isAdmin       Boolean  @default(false)
 
   createdTags                 Tag[]

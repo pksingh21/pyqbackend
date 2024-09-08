@@ -14,7 +14,9 @@ const createTag = catchAsync(async (req: Request, res: Response, next: NextFunct
       name,
       type: typeOfTag,
       createdBy: {
-        connect: user,
+        connect: {
+          uuid: user.uuid,
+        }
       },
     },
   });
