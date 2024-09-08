@@ -21,7 +21,19 @@ const protect = catchAsync(async (req: Request, res: Response, next: NextFunctio
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as User;
-    req.user = decoded;
+
+    const { uuid } = decoded;
+
+    console.log({ decoded });
+    const user: User | null = await prisma.user.findUnique({
+      where: { uuid: String(uuid) },
+    });
+
+    console.log({ user });
+
+    if (!user) throw Error('Invalid token');
+
+    req.user = user;
   } catch (err) {
     return next(new AppError('Invalid token', 401));
   }
@@ -37,10 +49,12 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
   const { uid, phone_number } = decodedToken;
 
   const user: User | null = await prisma.user.findUnique({
-    where: { uuid: String(uid), phoneNumber: String(phone_number) },
+    where: { uuid: String(uid) },
   });
 
-  const token: String = jwt.sign({ uid }, process.env.JWT_SECRET_KEY as string, {
+  console.log({ user });
+
+  const token: String = jwt.sign({ uuid: uid }, process.env.JWT_SECRET_KEY as string, {
     expiresIn: `${process.env.JWT_EXPIRES_IN_DAYS}d`,
   });
 
@@ -76,8 +90,6 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
 });
 
 const getLoginStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  console.log({ user: req.user });
-
   res.status(200).send({ message: 'Already logged in!', user: req.user });
 });
 
