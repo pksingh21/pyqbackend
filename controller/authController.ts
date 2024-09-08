@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
 
+import { auth } from '../firebase';
+
 dotenv.config();
 
 const prisma = new PrismaClient();
@@ -28,6 +30,14 @@ const protect = catchAsync(async (req: Request, res: Response, next: NextFunctio
 });
 
 const login = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { token: idToken } = req.body;
+
+  const decodedToken = await auth.verifyIdToken(idToken);
+
+  const { uid } = decodedToken;
+
+  // TODO: check for user with 'uid', and create if not present
+
   const { email, password } = req.body;
 
   const user: User | null = await prisma.user.findUnique({

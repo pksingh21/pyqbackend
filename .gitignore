@@ -2,4 +2,5 @@
 node_modules
 JsBuild
 
+serviceAccountKey.json
 ./scripts/response.json
