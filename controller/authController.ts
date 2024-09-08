@@ -20,8 +20,8 @@ const protect = catchAsync(async (req: Request, res: Response, next: NextFunctio
   if (!token) return next(new AppError('A token is required for authentication', 403));
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as { email: string };
-    req.user = decoded as User;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as User;
+    req.user = decoded;
   } catch (err) {
     return next(new AppError('Invalid token', 401));
   }
@@ -40,19 +40,39 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
     where: { uuid: String(uid), phoneNumber: String(phone_number) },
   });
 
+  const token: String = jwt.sign({ uid }, process.env.JWT_SECRET_KEY as string, {
+    expiresIn: `${process.env.JWT_EXPIRES_IN_DAYS}d`,
+  });
+
+  let statusCode: number | null = null;
+  let message: String | null = null;
+  let userData: User | null = null;
+
   if (!user) {
     // create the user if user doesn't exist
     const newUser = await prisma.user.create({
       data: {
         uuid: String(uid),
-        phoneNumber: String(phone_number)
-      }
-    })
-    res.status(201).json({ message: "User Created successfully ", newUser })
+        phoneNumber: String(phone_number),
+      },
+    });
+
+    statusCode = 201;
+    message = 'User Created successfully ';
+    userData = newUser;
   } else {
-    res.status(200).json({ message: "User found!!", user });
+    statusCode = 200;
+    message = 'User found!!';
+    userData = user;
   }
 
+  res.cookie('auth_token', token, {
+    httpOnly: true,
+    maxAge: Number(process.env.JWT_EXPIRES_IN_DAYS) * 24 * 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === 'production',
+  });
+
+  res.status(statusCode).json({ message, user: userData });
 });
 
 const getLoginStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
