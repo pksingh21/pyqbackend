@@ -4,8 +4,8 @@ import {
   deleteQuestionChoice,
   updateQuestionChoice,
   getQuestionChoice,
-} from '../controller/questionChoiceController';
-import { protect } from '../controller/authController';
+} from '../controllers/questionChoiceController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 

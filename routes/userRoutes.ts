@@ -1,7 +1,7 @@
 // authRoutes.ts
 import { Router } from 'express';
-import { createUser, deleteUser, updateUser, getUser } from '../controller/userController';
-import { protect } from '../controller/authController';
+import { createUser, deleteUser, updateUser, getUser } from '../controllers/userController';
+import { protect } from '../controllers/authController';
 const router = Router();
 
 // Public route

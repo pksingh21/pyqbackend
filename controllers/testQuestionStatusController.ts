@@ -53,7 +53,7 @@ const getTestQuestionStatus = catchAsync(async (req: Request, res: Response, nex
   const { id } = req.params;
 
   const testQuestionStatus = await prisma.testQuestionStatus.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!testQuestionStatus) return next(new AppError('Test question status not found', 404));
@@ -63,7 +63,7 @@ const getTestQuestionStatus = catchAsync(async (req: Request, res: Response, nex
 
 const updateTestQuestionStatus = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { testId, questionId, status }: { testId?: number; questionId?: number; status?: string } = req.body;
+  const { testId, questionId, status }: { testId?: string; questionId?: string; status?: string } = req.body;
   const user = (req as any).user as User;
 
   // Fetch current entities if IDs are provided
@@ -96,7 +96,7 @@ const updateTestQuestionStatus = catchAsync(async (req: Request, res: Response, 
 
   // Perform the update
   const updatedTestQuestionStatus = await prisma.testQuestionStatus.update({
-    where: { id: Number(id) },
+    where: { id },
     data: updateData,
   });
 
@@ -110,7 +110,7 @@ const deleteTestQuestionStatus = catchAsync(async (req: Request, res: Response, 
   const { id } = req.params;
 
   await prisma.testQuestionStatus.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();
@@ -119,11 +119,11 @@ const deleteTestQuestionStatus = catchAsync(async (req: Request, res: Response, 
 const updateQuestionChoiceForTestQuestionStatus = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { choices }: { choices?: number[] } = req.body;
+    const { choices }: { choices?: string[] } = req.body;
 
     // Fetch the existing TestQuestionStatus to ensure it exists
     const existingTestQuestionStatus = await prisma.testQuestionStatus.findUnique({
-      where: { id: Number(id) },
+      where: { id },
     });
 
     if (!existingTestQuestionStatus) {
@@ -132,7 +132,7 @@ const updateQuestionChoiceForTestQuestionStatus = catchAsync(
 
     // Perform the update
     const updatedTestQuestionStatus = await prisma.testQuestionStatus.update({
-      where: { id: Number(id) },
+      where: { id },
       data: {
         choices: {
           set: choices ? choices.map((choiceId) => ({ id: choiceId })) : [], // 'set' will replace existing choices with new ones

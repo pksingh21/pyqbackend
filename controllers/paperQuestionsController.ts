@@ -18,32 +18,32 @@ const createPaperQuestion = catchAsync(async (req: Request, res: Response, next:
       id: paperQuestion.questionId,
     },
   });
-  if (paper && question) {
-    const newPaperQuestion = await prisma.paperQuestion.create({
-      data: {
-        questionOrder: paperQuestion.id,
-        createdBy: {
-          connect: {
-            id: user.id,
-          },
-        },
-        paper: {
-          connect: {
-            id: paper.id,
-          },
-        },
-        question: {
-          connect: {
-            id: question.id,
-          },
-        },
-      },
-    });
-    res.status(201).json({
-      message: 'Paper question created',
-      paperQuestion: newPaperQuestion,
-    });
-  }
+  // // if (paper && question) {
+  // //   const newPaperQuestion = await prisma.paperQuestion.create({
+  // //     data: {
+  // //       questionOrder: paperQuestion.id,
+  // //       createdBy: {
+  // //         connect: {
+  // //           id: user.id,
+  // //         },
+  // //       },
+  // //       paper: {
+  // //         connect: {
+  // //           id: paper.id,
+  // //         },
+  // //       },
+  // //       question: {
+  // //         connect: {
+  // //           id: question.id,
+  // //         },
+  // //       },
+  // //     },
+  // //   });
+  // //   res.status(201).json({
+  // //     message: 'Paper question created',
+  // //     paperQuestion: newPaperQuestion,
+  // //   });
+  // }
 
   return next(new AppError('paper or question might be not there', 403));
 });
@@ -52,7 +52,7 @@ const getPaperQuestion = catchAsync(async (req: Request, res: Response, next: Ne
   const { id } = req.params;
 
   const paperQuestion = await prisma.paperQuestion.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!paperQuestion) return next(new AppError('Paper question not found', 404));
@@ -102,7 +102,7 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
 
   // Perform the update
   const updatedPaperQuestion = await prisma.paperQuestion.update({
-    where: { id: parseInt(id) },
+    where: { id },
     data: updateData,
   });
 
@@ -116,7 +116,7 @@ const deletePaperQuestion = catchAsync(async (req: Request, res: Response, next:
   const { id } = req.params;
 
   await prisma.paperQuestion.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();

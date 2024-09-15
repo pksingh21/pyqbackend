@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createTag, deleteTag, updateTag, getTag } from '../controller/tagController';
-import { protect } from '../controller/authController';
+import { createTag, deleteTag, updateTag, getTag } from '../controllers/tagController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 

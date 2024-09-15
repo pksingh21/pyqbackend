@@ -22,11 +22,11 @@ const protect = catchAsync(async (req: Request, res: Response, next: NextFunctio
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as User;
 
-    const { uuid } = decoded;
+    const { uid } = decoded;
 
     console.log({ decoded });
     const user: User | null = await prisma.user.findUnique({
-      where: { uuid: String(uuid) },
+      where: { uid: String(uid) },
     });
 
     console.log({ user });
@@ -49,12 +49,12 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
   const { uid, phone_number } = decodedToken;
 
   const user: User | null = await prisma.user.findUnique({
-    where: { uuid: String(uid) },
+    where: { uid: String(uid) },
   });
 
   console.log({ user });
 
-  const token: String = jwt.sign({ uuid: uid }, process.env.JWT_SECRET_KEY as string, {
+  const token: String = jwt.sign({ uid }, process.env.JWT_SECRET_KEY as string, {
     expiresIn: `${process.env.JWT_EXPIRES_IN_DAYS}d`,
   });
 
@@ -66,7 +66,7 @@ const login = catchAsync(async (req: Request, res: Response, next: NextFunction)
     // create the user if user doesn't exist
     const newUser = await prisma.user.create({
       data: {
-        uuid: String(uid),
+        uid: String(uid),
         phoneNumber: String(phone_number),
       },
     });

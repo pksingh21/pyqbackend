@@ -29,7 +29,7 @@ const getPaper = catchAsync(async (req: Request, res: Response, next: NextFuncti
   const { id } = req.params;
 
   const paper = await prisma.paper.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!paper) return next(new AppError('Paper not found', 404));
@@ -43,7 +43,7 @@ const updatePaper = catchAsync(async (req: Request, res: Response, next: NextFun
 
   // Find the Paper to ensure it exists
   const existingPaper = await prisma.paper.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!existingPaper) {
@@ -65,7 +65,7 @@ const updatePaper = catchAsync(async (req: Request, res: Response, next: NextFun
 
   // Perform the update
   const updatedPaper = await prisma.paper.update({
-    where: { id: Number(id) },
+    where: { id },
     data: updateData,
   });
 
@@ -74,11 +74,11 @@ const updatePaper = catchAsync(async (req: Request, res: Response, next: NextFun
 
 const updateTagsForPaper = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { tagIds }: { tagIds?: number[] } = req.body;
+  const { tagIds }: { tagIds?: string[] } = req.body;
 
   // Fetch the existing Paper to ensure it exists
   const existingPaper = await prisma.paper.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!existingPaper) {
@@ -87,7 +87,7 @@ const updateTagsForPaper = catchAsync(async (req: Request, res: Response, next: 
 
   // Perform the update
   const updatedPaper = await prisma.paper.update({
-    where: { id: Number(id) },
+    where: { id },
     data: {
       tags: {
         set: tagIds ? tagIds.map((tagId) => ({ id: tagId })) : [], // 'set' will replace existing tags with new ones
@@ -102,7 +102,7 @@ const deletePaper = catchAsync(async (req: Request, res: Response, next: NextFun
   const { id } = req.params;
 
   await prisma.paper.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();

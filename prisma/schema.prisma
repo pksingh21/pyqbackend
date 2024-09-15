@@ -14,12 +14,12 @@ datasource db {
 }
 
 model Tag {
-  id            Int      @id @default(autoincrement())
+  id            String   @id @default(uuid())
   name          String
   type          TagType
   createdAt     DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt
-  createdById   Int
+  createdById   String
   createdBy     User     @relation(fields: [createdById], references: [id])
 
   Users     User[]     @relation("UserInterestedTags")
@@ -28,11 +28,11 @@ model Tag {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  uuid          String   @unique @default(uuid()) 
+  id            String   @id @default(uuid())
+  uid           String   @unique @default(uuid())
   phoneNumber   String
   name          String?
-  email         String?   @unique
+  email         String?  @unique
   createdAt     DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt
   interested    Tag[]    @relation("UserInterestedTags")
@@ -49,16 +49,14 @@ model User {
 }
 
 model Question {
-  id             Int              @id @default(autoincrement())
+  id             String           @id @default(uuid())
   text           String
   images         String[]
   choices        QuestionChoice[]
   isMultiCorrect Boolean
-  correctMarks   Int
-  incorrectMarks Int
   createdAt      DateTime         @default(now())
   lastUpdatedAt  DateTime         @updatedAt
-  createdById    Int
+  createdById    String
   createdBy      User             @relation(fields: [createdById], references: [id])
   tags           Tag[]            @relation("QuestionTags")
 
@@ -67,28 +65,28 @@ model Question {
 }
 
 model QuestionChoice {
-  id            Int      @id @default(autoincrement())
+  id            String   @id @default(uuid())
   text          String
   isAnswer      Boolean
   choiceOrder   Int
   createdAt     DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt
-  createdById   Int
+  createdById   String
   createdBy     User     @relation(fields: [createdById], references: [id])
-  questionId    Int
+  questionId    String
   question      Question @relation(fields: [questionId], references: [id])
 
   TestStatuses TestQuestionStatus[] @relation("TestQuestionStatusChoices")
 }
 
 model Paper {
-  id            Int             @id @default(autoincrement())
+  id            String          @id @default(uuid())
   title         String
   isModule      Boolean
   duration      Int
   createdAt     DateTime        @default(now())
   lastUpdatedAt DateTime        @updatedAt
-  createdById   Int
+  createdById   String
   createdBy     User            @relation(fields: [createdById], references: [id])
   tags          Tag[]           @relation("PaperTags")
   questions     PaperQuestion[]
@@ -97,42 +95,44 @@ model Paper {
 }
 
 model PaperQuestion {
-  id            Int      @id @default(autoincrement())
-  questionOrder Int
-  createdAt     DateTime @default(now())
-  lastUpdatedAt DateTime @updatedAt
-  createdById   Int
-  createdBy     User     @relation(fields: [createdById], references: [id])
-  paperId       Int
-  paper         Paper    @relation(fields: [paperId], references: [id])
-  questionId    Int
-  question      Question @relation(fields: [questionId], references: [id])
+  id             String   @id @default(uuid())
+  questionOrder  Int
+  createdAt      DateTime @default(now())
+  lastUpdatedAt  DateTime @updatedAt
+  createdById    String
+  createdBy      User     @relation(fields: [createdById], references: [id])
+  paperId        String
+  paper          Paper    @relation(fields: [paperId], references: [id])
+  questionId     String
+  question       Question @relation(fields: [questionId], references: [id])
+  correctMarks   Int      @default(0)
+  incorrectMarks Int      @default(0)
 }
 
 model Test {
-  id               Int                  @id @default(autoincrement())
+  id               String               @id @default(uuid())
   duration         Int
   startTime        DateTime
   elapsedTime      Int
   createdAt        DateTime             @default(now())
   lastUpdatedAt    DateTime             @updatedAt
-  createdById      Int
+  createdById      String
   createdBy        User                 @relation(fields: [createdById], references: [id])
-  paperId          Int
+  paperId          String
   paper            Paper                @relation(fields: [paperId], references: [id])
   questionStatuses TestQuestionStatus[]
 }
 
 model TestQuestionStatus {
-  id            Int              @id @default(autoincrement())
+  id            String           @id @default(uuid())
   status        Status
   createdAt     DateTime         @default(now())
   lastUpdatedAt DateTime         @updatedAt
-  createdById   Int
+  createdById   String
   createdBy     User             @relation(fields: [createdById], references: [id])
-  testId        Int
+  testId        String
   test          Test             @relation(fields: [testId], references: [id])
-  questionId    Int
+  questionId    String
   question      Question         @relation(fields: [questionId], references: [id])
   choices       QuestionChoice[] @relation("TestQuestionStatusChoices")
 }

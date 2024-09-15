@@ -40,7 +40,7 @@ const getTest = catchAsync(async (req: Request, res: Response, next: NextFunctio
   const { id } = req.params;
 
   const test = await prisma.test.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!test) return next(new AppError('Test not found', 404));
@@ -84,7 +84,7 @@ const updateTest = catchAsync(async (req: Request, res: Response, next: NextFunc
 
   // Perform the update
   const updatedTest = await prisma.test.update({
-    where: { id: Number(id) },
+    where: { id },
     data: updateData,
   });
 
@@ -95,7 +95,7 @@ const deleteTest = catchAsync(async (req: Request, res: Response, next: NextFunc
   const { id } = req.params;
 
   await prisma.test.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();

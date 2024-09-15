@@ -34,7 +34,7 @@ const getUser = catchAsync(async (req: Request, res: Response, next: NextFunctio
   const { id } = req.params;
 
   const user: User | null = await prisma.user.findUnique({
-    where: { id: parseInt(id, 10) },
+    where: { id },
   });
 
   if (!user) {
@@ -61,7 +61,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
   }
 
   const updatedUser: User = await prisma.user.update({
-    where: { id: parseInt(id, 10) },
+    where: { id },
     data: updatedData,
   });
 
@@ -75,11 +75,11 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 
 const updateTagsForUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params; // id of the user
-  const { tagIds }: { tagIds?: number[] } = req.body;
+  const { tagIds }: { tagIds?: string[] } = req.body;
 
   // Fetch the existing User to ensure they exist
   const existingUser = await prisma.user.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!existingUser) {
@@ -88,7 +88,7 @@ const updateTagsForUser = catchAsync(async (req: Request, res: Response, next: N
 
   // Perform the update
   const updatedUser = await prisma.user.update({
-    where: { id: Number(id) },
+    where: { id },
     data: {
       interested: {
         set: tagIds ? tagIds.map((tagId) => ({ id: tagId })) : [], // 'set' will replace existing tags with new ones
@@ -104,7 +104,7 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
   const { id } = req.params;
 
   await prisma.user.delete({
-    where: { id: parseInt(id, 10) },
+    where: { id },
   });
 
   res.status(204).json({

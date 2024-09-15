@@ -44,7 +44,7 @@ const getQuestionChoice = catchAsync(async (req: Request, res: Response, next: N
   const { id } = req.params;
 
   const questionChoice = await prisma.questionChoice.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!questionChoice) return next(new AppError('Question choice not found', 404));
@@ -58,7 +58,7 @@ const updateQuestionChoice = catchAsync(async (req: Request, res: Response, next
 
   // Find the QuestionChoice to ensure it exists
   const questionChoice = await prisma.questionChoice.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!questionChoice) {
@@ -90,7 +90,7 @@ const updateQuestionChoice = catchAsync(async (req: Request, res: Response, next
 
   // Perform the update
   const updatedQuestionChoice = await prisma.questionChoice.update({
-    where: { id: Number(id) },
+    where: { id },
     data: updateData,
   });
 
@@ -104,7 +104,7 @@ const deleteQuestionChoice = catchAsync(async (req: Request, res: Response, next
   const { id } = req.params;
 
   await prisma.questionChoice.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();

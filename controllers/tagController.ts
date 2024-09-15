@@ -15,7 +15,7 @@ const createTag = catchAsync(async (req: Request, res: Response, next: NextFunct
       type: typeOfTag,
       createdBy: {
         connect: {
-          uuid: user.uuid,
+          uid: user.uid,
         },
       },
     },
@@ -28,7 +28,7 @@ const getTag = catchAsync(async (req: Request, res: Response, next: NextFunction
   const { id } = req.params;
 
   const tag = await prisma.tag.findUnique({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   if (!tag) return next(new AppError('Tag not found', 404));
@@ -41,7 +41,7 @@ const updateTag = catchAsync(async (req: Request, res: Response, next: NextFunct
   const { name, typeOfTag }: { name: string; typeOfTag: TagType } = req.body;
 
   const updatedTag = await prisma.tag.update({
-    where: { id: Number(id) },
+    where: { id },
     data: { name, type: typeOfTag },
   });
 
@@ -52,7 +52,7 @@ const deleteTag = catchAsync(async (req: Request, res: Response, next: NextFunct
   const { id } = req.params;
 
   await prisma.tag.delete({
-    where: { id: Number(id) },
+    where: { id },
   });
 
   res.status(204).send();

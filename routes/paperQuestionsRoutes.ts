@@ -4,8 +4,8 @@ import {
   deletePaperQuestion,
   updatePaperQuestion,
   getPaperQuestion,
-} from '../controller/paperQuestionsController';
-import { protect } from '../controller/authController';
+} from '../controllers/paperQuestionsController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 

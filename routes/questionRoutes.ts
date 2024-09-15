@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import {
-  createQuestion,
+  createQuestions,
   deleteQuestion,
   updateQuestion,
   getQuestion,
   updateQuestionChoiceForQuestion,
-} from '../controller/questionController';
-import { protect } from '../controller/authController';
+} from '../controllers/questionController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 
@@ -15,7 +15,7 @@ const router = Router();
 // Protected routes
 router.use(protect);
 
-router.post('/', createQuestion);
+router.post('/', createQuestions);
 router.get('/:id', getQuestion);
 router.patch('/:id', updateQuestion);
 router.delete('/:id', deleteQuestion);

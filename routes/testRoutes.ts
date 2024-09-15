@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createTest, deleteTest, updateTest, getTest } from '../controller/testController';
-import { protect } from '../controller/authController';
+import { createTest, deleteTest, updateTest, getTest } from '../controllers/testController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 

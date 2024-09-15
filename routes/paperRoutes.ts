@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { createPaper, deletePaper, updatePaper, getPaper, updateTagsForPaper } from '../controller/paperController';
-import { protect } from '../controller/authController';
+import { createPaper, deletePaper, updatePaper, getPaper, updateTagsForPaper } from '../controllers/paperController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 

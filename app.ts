@@ -3,7 +3,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 
-import globalErrorHandler from './controller/errorController';
+import globalErrorHandler from './controllers/errorController';
 
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';

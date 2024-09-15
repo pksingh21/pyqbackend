@@ -5,8 +5,8 @@ import {
   updateTestQuestionStatus,
   getTestQuestionStatus,
   updateQuestionChoiceForTestQuestionStatus,
-} from '../controller/testQuestionStatusController';
-import { protect } from '../controller/authController';
+} from '../controllers/testQuestionStatusController';
+import { protect } from '../controllers/authController';
 
 const router = Router();
 
