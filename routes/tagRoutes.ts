@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { createTag, deleteTag, updateTag, getTag } from '../controllers/tagController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-// Public route
 
-// Protected routes
-router.use(protect);
-
-router.post('/', createTag);
-router.get('/:id', getTag);
-router.patch('/:id', updateTag);
-router.delete('/:id', deleteTag);
+router.post('/', protectAuthLevel("admin"), createTag);
+router.get('/:id', protectAuthLevel("user"), getTag);
+router.patch('/:id', protectAuthLevel("admin"), updateTag);
+router.delete('/:id', protectAuthLevel("admin"), deleteTag);
 
 export default router;

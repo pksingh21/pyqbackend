@@ -5,18 +5,14 @@ import {
   updatePaperQuestion,
   getPaperQuestion,
 } from '../controllers/paperQuestionsController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-// Public route
 
-// Protected routes
-router.use(protect);
-
-router.post('/', createPaperQuestion);
-router.get('/:id', getPaperQuestion);
-router.patch('/:id', updatePaperQuestion);
-router.delete('/:id', deletePaperQuestion);
+router.post('/', protectAuthLevel("admin"), createPaperQuestion);
+router.get('/:id', protectAuthLevel("user"), getPaperQuestion);
+router.patch('/:id', protectAuthLevel("admin"), updatePaperQuestion);
+router.delete('/:id', protectAuthLevel("admin"), deletePaperQuestion);
 
 export default router;

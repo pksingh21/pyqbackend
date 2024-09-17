@@ -6,19 +6,15 @@ import {
   getTestQuestionStatus,
   updateQuestionChoiceForTestQuestionStatus,
 } from '../controllers/testQuestionStatusController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-// Public route
 
-// Protected routes
-router.use(protect);
-
-router.post('/', createTestQuestionStatus);
-router.get('/:id', getTestQuestionStatus);
-router.patch('/:id', updateTestQuestionStatus);
-router.delete('/:id', deleteTestQuestionStatus);
-router.post('/questionChoice', updateQuestionChoiceForTestQuestionStatus);
+router.post('/', protectAuthLevel("admin"), createTestQuestionStatus);
+router.get('/:id', protectAuthLevel("user"), getTestQuestionStatus);
+router.patch('/:id', protectAuthLevel("admin"), updateTestQuestionStatus);
+router.delete('/:id', protectAuthLevel("admin"), deleteTestQuestionStatus);
+router.post('/questionChoice',protectAuthLevel("admin"), updateQuestionChoiceForTestQuestionStatus);
 
 export default router;

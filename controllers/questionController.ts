@@ -63,17 +63,32 @@ const createQuestions = catchAsync(async (req: Request, res: Response, next: Nex
   res.status(201).json({ message: 'Questions created successfully!', data });
 });
 
+// this method doesn't return choices associated with a given question
 const getQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
   const question = await prisma.question.findUnique({
     where: { id },
+
   });
 
   if (!question) return next(new AppError('Question not found', 404));
+  res.status(200).json({ message: 'Question fetched successfully!!', data: question });
 
-  res.status(200).json({ question });
 });
+
+const getQuestionWithChoices = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params
+  const questionWithChoices = await prisma.question.findUnique({
+    where: { id },
+    include: {
+      choices: true
+    }
+  })
+
+  res.status(200).json({ message: 'Question with choices fetched successfully!!', data: questionWithChoices });
+
+})
 
 const updateQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
@@ -128,4 +143,23 @@ const deleteQuestion = catchAsync(async (req: Request, res: Response, next: Next
   res.status(204).send();
 });
 
-export { createQuestions, getQuestion, updateQuestion, deleteQuestion, updateQuestionChoiceForQuestion };
+const deleteQuestionWithChoices = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+
+  await prisma.$transaction(async (prisma) => {
+    // Delete related choices first
+    await prisma.questionChoice.deleteMany({
+      where: {
+        questionId: id,
+      },
+    });
+    // Delete the question after the related choices are deleted
+    await prisma.question.delete({
+      where: { id },
+    });
+  });
+
+  res.status(204).send();
+})
+
+export { createQuestions, getQuestion, updateQuestion, deleteQuestion, updateQuestionChoiceForQuestion, getQuestionWithChoices , deleteQuestionWithChoices };

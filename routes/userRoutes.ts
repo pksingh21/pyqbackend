@@ -1,16 +1,14 @@
 // authRoutes.ts
 import { Router } from 'express';
 import { createUser, deleteUser, updateUser, getUser } from '../controllers/userController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 const router = Router();
 
 // Public route
 router.post('/', createUser);
 
-// Protected routes
-router.use(protect);
-router.get('/:id', getUser);
-router.patch('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.get('/:id', protectAuthLevel("user"), getUser);
+router.patch('/:id', protectAuthLevel("user"), updateUser);
+router.delete('/:id', protectAuthLevel("user"), deleteUser);
 
 export default router;

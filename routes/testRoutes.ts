@@ -1,17 +1,13 @@
 import { Router } from 'express';
 import { createTest, deleteTest, updateTest, getTest } from '../controllers/testController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-// Public route
 
-// Protected routes
-router.use(protect);
-
-router.post('/', createTest);
-router.get('/:id', getTest);
-router.patch('/:id', updateTest);
-router.delete('/:id', deleteTest);
+router.post('/', protectAuthLevel("admin"), createTest);
+router.get('/:id', protectAuthLevel("user"), getTest);
+router.patch('/:id', protectAuthLevel("admin"), updateTest);
+router.delete('/:id', protectAuthLevel("admin"), deleteTest);
 
 export default router;

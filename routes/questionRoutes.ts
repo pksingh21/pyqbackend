@@ -5,20 +5,20 @@ import {
   updateQuestion,
   getQuestion,
   updateQuestionChoiceForQuestion,
+  getQuestionWithChoices,
+  deleteQuestionWithChoices,
 } from '../controllers/questionController';
-import { protect } from '../controllers/authController';
+import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-// Public route
 
-// Protected routes
-router.use(protect);
-
-router.post('/', createQuestions);
-router.get('/:id', getQuestion);
-router.patch('/:id', updateQuestion);
-router.delete('/:id', deleteQuestion);
-router.post('/questionChoice', updateQuestionChoiceForQuestion);
+router.post('/', protectAuthLevel("admin"), createQuestions);
+router.get('/:id', protectAuthLevel("user"), getQuestion);
+router.get('/withChoices/:id', protectAuthLevel("user"), getQuestionWithChoices)
+router.patch('/:id', protectAuthLevel("admin"), updateQuestion);
+router.delete('/:id', protectAuthLevel("admin"), deleteQuestion);
+router.get('/withChoices/:id', protectAuthLevel("admin"), deleteQuestionWithChoices)
+router.post('/questionChoice', protectAuthLevel("admin"), updateQuestionChoiceForQuestion);
 
 export default router;
