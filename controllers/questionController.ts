@@ -69,26 +69,29 @@ const getQuestion = catchAsync(async (req: Request, res: Response, next: NextFun
 
   const question = await prisma.question.findUnique({
     where: { id },
-
   });
 
   if (!question) return next(new AppError('Question not found', 404));
   res.status(200).json({ message: 'Question fetched successfully!!', data: question });
-
 });
 
 const getQuestionWithChoices = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params
+  const { id } = req.params;
   const questionWithChoices = await prisma.question.findUnique({
     where: { id },
     include: {
-      choices: true
-    }
-  })
+      choices: true,
+    },
+  });
 
   res.status(200).json({ message: 'Question with choices fetched successfully!!', data: questionWithChoices });
+});
 
-})
+const getQuestionsCount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const questionsCount = await prisma.question.count();
+
+  res.status(200).json({ count: questionsCount });
+});
 
 const updateQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
@@ -160,6 +163,15 @@ const deleteQuestionWithChoices = catchAsync(async (req: Request, res: Response,
   });
 
   res.status(204).send();
-})
+});
 
-export { createQuestions, getQuestion, updateQuestion, deleteQuestion, updateQuestionChoiceForQuestion, getQuestionWithChoices , deleteQuestionWithChoices };
+export {
+  createQuestions,
+  getQuestion,
+  getQuestionsCount,
+  updateQuestion,
+  deleteQuestion,
+  updateQuestionChoiceForQuestion,
+  getQuestionWithChoices,
+  deleteQuestionWithChoices,
+};
