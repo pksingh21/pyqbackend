@@ -7,8 +7,8 @@ const router = Router();
 // Public route
 router.post('/', createUser);
 
-router.get('/:id', protectAuthLevel("user"), getUser);
-router.patch('/:id', protectAuthLevel("user"), updateUser);
-router.delete('/:id', protectAuthLevel("user"), deleteUser);
+router.get('/:id', protectAuthLevel('user'), getUser);
+router.patch('/:id', protectAuthLevel('user'), updateUser);
+router.delete('/:id', protectAuthLevel('user'), deleteUser);
 
 export default router;

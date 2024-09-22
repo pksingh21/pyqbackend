@@ -65,26 +65,47 @@ const createQuestions = catchAsync(async (req: Request, res: Response, next: Nex
 
 // this method doesn't return choices associated with a given question
 const getQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
+  const { id, includeChoices } = req.params;
+
+  const shouldIncludeChoices = includeChoices === 'true';
 
   const question = await prisma.question.findUnique({
     where: { id },
+    include: shouldIncludeChoices ? { choices: true } : {},
   });
 
   if (!question) return next(new AppError('Question not found', 404));
   res.status(200).json({ message: 'Question fetched successfully!!', data: question });
 });
 
-const getQuestionWithChoices = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  const questionWithChoices = await prisma.question.findUnique({
-    where: { id },
-    include: {
-      choices: true,
-    },
+const getQuestions = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { page, limit, includeChoices } = req.query;
+
+  const pageNumber = parseInt(page as string, 10) || 1;
+  const limitNumber = parseInt(limit as string, 10) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const shouldIncludeChoices = includeChoices === 'true';
+
+  const questions = await prisma.question.findMany({
+    skip,
+    take: limitNumber,
+    include: shouldIncludeChoices ? { choices: true } : {},
   });
 
-  res.status(200).json({ message: 'Question with choices fetched successfully!!', data: questionWithChoices });
+  if (!questions.length) {
+    return next(new AppError('No questions found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Questions fetched successfully',
+    data: {
+      questions,
+      page,
+      limit,
+    },
+  });
 });
 
 const getQuestionsCount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -168,10 +189,10 @@ const deleteQuestionWithChoices = catchAsync(async (req: Request, res: Response,
 export {
   createQuestions,
   getQuestion,
+  getQuestions,
   getQuestionsCount,
   updateQuestion,
   deleteQuestion,
   updateQuestionChoiceForQuestion,
-  getQuestionWithChoices,
   deleteQuestionWithChoices,
 };

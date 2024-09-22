@@ -7,8 +7,7 @@ const router = Router();
 // Public route
 router.post('/login', login);
 
-
-router.get('/login-status',protectAuthLevel("user"), getLoginStatus);
-router.post('/logout',protectAuthLevel("user"), logout);
+router.get('/login-status', protectAuthLevel('user'), getLoginStatus);
+router.post('/logout', protectAuthLevel('user'), logout);
 
 export default router;
