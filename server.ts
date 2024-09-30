@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import app from './app'; // Importing the app module
 import dotenv from 'dotenv';
 

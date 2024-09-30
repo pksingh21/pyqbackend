@@ -37,6 +37,7 @@ const protectAuthLevel = (authLevelProvided: string) => {
 
       next();
     } catch (err) {
+      console.log({ err });
       return next(new AppError('Invalid token', 401));
     }
   });

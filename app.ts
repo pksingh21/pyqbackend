@@ -15,7 +15,7 @@ import paperQuestionChoiceRoutes from './routes/paperQuestionsRoutes';
 import paperRoutes from './routes/paperRoutes';
 import testQuestionStatusRoutes from './routes/testQuestionStatusRoutes';
 
-import requestLogger from './utils/requestLogger';
+import { requestLogger } from './middlewares';
 import AppError from './utils/appError';
 
 const app = express();
@@ -51,7 +51,7 @@ app.use('/api/questionChoice', questionChoiceRoutes);
 app.use('/api/test', testRoutes);
 app.use('/api/paper', paperRoutes);
 app.use('/api/paperQuestionChoice', paperQuestionChoiceRoutes);
-app.use('/api/testQuestionStatusRoutes.ts', testQuestionStatusRoutes);
+app.use('/api/testQuestionStatus', testQuestionStatusRoutes);
 
 // Serve the React frontend
 app.get('*', (req: Request, res: Response) => {

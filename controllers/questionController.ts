@@ -2,8 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, Question, User } from '@prisma/client';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
+import deepEqual from '../utils/deepEqual';
 
-import { CreateQuestionsDTO } from '../dtos/question';
+import { QuestionDTO } from '../dtos';
 
 const prisma = new PrismaClient();
 
@@ -28,7 +29,7 @@ const createQuestion = catchAsync(async (req: Request, res: Response, next: Next
 });
 
 const createQuestions = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { questions }: { questions: CreateQuestionsDTO } = req.body;
+  const { questions }: { questions: QuestionDTO[] } = req.body;
   const user = (req as any).user as User;
 
   // Bulk create questions
@@ -41,10 +42,10 @@ const createQuestions = catchAsync(async (req: Request, res: Response, next: Nex
   });
 
   const choices = questions.flatMap((question, index) =>
-    question.choices.map((choice, choiceIndex) => ({
+    question.choices.map((choice) => ({
       text: choice.text,
       isAnswer: choice.isAnswer,
-      choiceOrder: choiceIndex,
+      choiceOrder: choice.choiceOrder,
       questionId: newQuestions[index].id,
       createdById: user.id,
     }))
@@ -63,9 +64,9 @@ const createQuestions = catchAsync(async (req: Request, res: Response, next: Nex
   res.status(201).json({ message: 'Questions created successfully!', data });
 });
 
-// this method doesn't return choices associated with a given question
 const getQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id, includeChoices } = req.params;
+  const { id } = req.params;
+  const { includeChoices } = req.query;
 
   const shouldIncludeChoices = includeChoices === 'true';
 
@@ -116,18 +117,106 @@ const getQuestionsCount = catchAsync(async (req: Request, res: Response, next: N
 
 const updateQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { content }: { content: Question } = req.body;
+  const { question }: { question: QuestionDTO } = req.body;
 
-  const updatedQuestion = await prisma.question.update({
+  console.dir({ question }, { depth: null, colors: true });
+
+  const originalQuestion = await prisma.question.findUnique({
     where: { id },
-    data: {
-      text: content.text,
-      images: content.images,
-      isMultiCorrect: content.isMultiCorrect,
+    include: { choices: true },
+  });
+
+  if (!originalQuestion) {
+    return new AppError('Question does not exist!', 404);
+  }
+
+  // Compare and update 'question.text'
+  if (originalQuestion.text !== question.text) {
+    await prisma.question.update({
+      where: { id },
+      data: {
+        text: question.text,
+      },
+    });
+  }
+
+  // Compare and update choices
+  const existingChoices = originalQuestion.choices;
+  const newChoices = question.choices;
+
+  // Update existing choices
+  const choicesToBeUpdated = [];
+  const choicesToBeCreated = [];
+  const choicesToBeDeleted = [];
+
+  for (const choice of newChoices) {
+    const existingChoice = existingChoices.find((c) => c.id === choice.id);
+    if (existingChoice) {
+      if (!deepEqual(existingChoice, choice)) {
+        choicesToBeUpdated.push(choice);
+      }
+    } else {
+      choicesToBeCreated.push(choice);
+    }
+  }
+
+  for (const existingChoice of existingChoices) {
+    if (!newChoices.find((choice) => choice.id === existingChoice.id)) {
+      choicesToBeDeleted.push(existingChoice);
+    }
+  }
+
+  const user = (req as any).user as User;
+
+  // Bulk create choices referencing the associated question
+  await prisma.questionChoice.createMany({
+    data: choicesToBeCreated.map((choice) => ({
+      text: choice.text,
+      choiceOrder: choice.choiceOrder,
+      isAnswer: choice.isAnswer,
+      questionId: id,
+      createdById: user.id,
+    })),
+  });
+
+  // Bulk update choices referencing the associated question
+  await Promise.all(
+    choicesToBeUpdated.map((choice) =>
+      prisma.questionChoice.update({
+        where: { id: choice.id }, // Ensure you provide a unique identifier for each update
+        data: {
+          text: choice.text,
+          choiceOrder: choice.choiceOrder,
+          isAnswer: choice.isAnswer,
+        },
+      })
+    )
+  );
+
+  // Bulk delete choices referencing the associated question
+  await prisma.questionChoice.deleteMany({
+    where: {
+      id: { in: choicesToBeDeleted.map((choice) => choice.id) },
     },
   });
 
-  res.status(200).json({ message: 'Question updated', question: updatedQuestion });
+  const updatedQuestion = await prisma.question.findUnique({
+    where: { id },
+    include: {
+      choices: {
+        orderBy: {
+          choiceOrder: 'asc',
+        },
+      },
+    },
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      question: updatedQuestion,
+    },
+  });
 });
 
 const updateQuestionChoiceForQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -186,7 +275,7 @@ const deleteQuestionWithChoices = catchAsync(async (req: Request, res: Response,
   res.status(204).send();
 });
 
-export {
+export default {
   createQuestions,
   getQuestion,
   getQuestions,

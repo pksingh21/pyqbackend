@@ -1,8 +1,8 @@
-export interface CreateQuestionDTO {
+import { ChoiceDTO } from '.';
+
+export interface QuestionDTO {
   text: string;
   id: string;
   isMultiCorrect: boolean;
-  choices: { id: string; isAnswer: boolean; text: string }[];
+  choices: ChoiceDTO[];
 }
-
-export interface CreateQuestionsDTO extends Array<CreateQuestionDTO> {}
