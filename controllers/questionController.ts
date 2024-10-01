@@ -249,6 +249,12 @@ const updateQuestionChoiceForQuestion = catchAsync(async (req: Request, res: Res
 const deleteQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
+  await prisma.questionChoice.deleteMany({
+    where: {
+      questionId: id,
+    },
+  });
+
   await prisma.question.delete({
     where: { id },
   });
