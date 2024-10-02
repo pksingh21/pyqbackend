@@ -31,7 +31,8 @@ model User {
   id            String   @id @default(uuid())
   uid           String   @unique @default(uuid())
   phoneNumber   String
-  name          String?
+  firstName     String?
+  lastName      String?
   email         String?  @unique
   createdAt     DateTime @default(now())
   lastUpdatedAt DateTime @updatedAt

@@ -8,14 +8,15 @@ const prisma = new PrismaClient();
 
 // Create a new user
 const createUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { phoneNumber, name, email, password } = req.body;
+  const { phoneNumber, firstName, lastName, email, password } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const newUser: User = await prisma.user.create({
     data: {
       phoneNumber,
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
     },
@@ -49,12 +50,45 @@ const getUser = catchAsync(async (req: Request, res: Response, next: NextFunctio
   });
 });
 
+// Update profile of user
+const updateProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.user as User;
+  const { user: userData } = req.body;
+
+  const updatableFields: (keyof User)[] = ['firstName', 'lastName', 'email'];
+
+  const fieldsToBeUpdated = updatableFields.filter((field) => {
+    const a = req.user![field];
+    const b = userData[field];
+    if (a !== b) {
+      if ((a == null || a === '') && (b == null || b == '')) return false;
+      return true;
+    }
+    return false;
+  });
+
+  const data: Partial<User> = {};
+  fieldsToBeUpdated.forEach((field) => (data[field] = userData[field]));
+
+  const updatedUser: User = await prisma.user.update({
+    where: { id },
+    data,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
+});
+
 // Update a user by ID
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { phoneNumber, name, email, password } = req.body;
+  const { phoneNumber, firstName, lastName, email, password } = req.body;
 
-  const updatedData: Partial<User> = { phoneNumber, name, email };
+  const updatedData: Partial<User> = { phoneNumber, firstName, lastName, email };
 
   if (password) {
     updatedData.password = await bcrypt.hash(password, 12);
@@ -113,4 +147,4 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
   });
 });
 
-export { createUser, getUser, updateUser, deleteUser };
+export default { createUser, getUser, updateUser, deleteUser, updateProfile };

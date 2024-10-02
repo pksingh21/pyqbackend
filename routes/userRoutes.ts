@@ -1,14 +1,37 @@
-// authRoutes.ts
-import { Router } from 'express';
-import { createUser, deleteUser, updateUser, getUser } from '../controllers/userController';
-import { protect, protectAuthLevel } from '../controllers/authController';
-const router = Router();
+import userController from '../controllers/userController';
+import { loadRouter } from '../middlewares';
+import { userValidator } from '../validators';
 
-// Public route
-router.post('/', createUser);
+import RouteConfig from '../types/RouteConfig';
 
-router.get('/:id', protectAuthLevel('user'), getUser);
-router.patch('/:id', protectAuthLevel('user'), updateUser);
-router.delete('/:id', protectAuthLevel('user'), deleteUser);
+const routeConfig: { [key: string]: RouteConfig } = {
+  createUser: {
+    method: 'post',
+    path: '/',
+    authLevel: 'admin',
+  },
+  updateProfile: {
+    method: 'patch',
+    path: '/',
+    authLevel: 'user',
+  },
+  getUser: {
+    method: 'get',
+    path: '/:id',
+    authLevel: 'admin',
+  },
+  updateUser: {
+    method: 'patch',
+    path: '/:id',
+    authLevel: 'admin',
+  },
+  deleteUser: {
+    method: 'delete',
+    path: '/:id',
+    authLevel: 'admin',
+  },
+};
+
+const router = loadRouter(routeConfig, userController, userValidator);
 
 export default router;
