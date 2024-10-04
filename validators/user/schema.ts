@@ -9,8 +9,9 @@ export const UserDTO = Joi.object({
   email: Joi.string().allow(null, '').required(),
   lastUpdatedAt: Joi.any().strip(),
   createdAt: Joi.any().strip(),
-  password: Joi.any().strip(),
+  password: Joi.any(),
   isAdmin: Joi.boolean().required(),
+  isEmailVerified: Joi.boolean(),
 });
 
 // Schema for creating a user (body)

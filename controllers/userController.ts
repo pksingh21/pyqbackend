@@ -3,6 +3,7 @@ import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
+import { auth } from '../firebase';
 
 const prisma = new PrismaClient();
 
@@ -52,57 +53,151 @@ const getUser = catchAsync(async (req: Request, res: Response, next: NextFunctio
 
 // Update profile of user
 const updateProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.user as User;
-  const { user: userData } = req.body;
+  const { user }: { user: User } = req.body;
+  let { firstName, lastName, email, password, uid, id } = user;
+  if (password) {
+    // if a user is giving password then he is also giving email so here we need to create email / password provider in
+    // firebase as well
+    password = await bcrypt.hash(password, 12);
+  }
 
-  const updatableFields: (keyof User)[] = ['firstName', 'lastName', 'email'];
+  const updatedData: Partial<User> = { firstName, lastName, email, password };
+  let updatedUser: User | undefined = user;
+  if (email || password) {
+    await prisma.$transaction(async () => {
+      const updatedUserObject: { email?: string; password?: string } = {};
+      if (email) {
+        updatedUserObject.email = email;
+        updatedData.isEmailVerified = false;
+      }
+      if (password) updatedUserObject.password = password;
 
-  const fieldsToBeUpdated = updatableFields.filter((field) => {
-    const a = req.user![field];
-    const b = userData[field];
-    if (a !== b) {
-      if ((a == null || a === '') && (b == null || b == '')) return false;
-      return true;
-    }
-    return false;
-  });
-
-  const data: Partial<User> = {};
-  fieldsToBeUpdated.forEach((field) => (data[field] = userData[field]));
-
-  const updatedUser: User = await prisma.user.update({
-    where: { id },
-    data,
-  });
-
-  res.status(200).json({
-    status: 'success',
-    data: {
-      user: updatedUser,
-    },
-  });
+      await auth.updateUser(uid, updatedUserObject);
+      updatedUser = await prisma.user.update({
+        where: { id },
+        data: updatedData,
+      });
+    });
+  } else {
+    updatedUser = await prisma.user.update({
+      where: { id },
+      data: updatedData,
+    });
+  }
+  if (updatedUser === undefined) {
+    res.status(500).json({
+      status: 'fail',
+    });
+  } else {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: updatedUser,
+      },
+    });
+  }
 });
 
 // Update a user by ID
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { phoneNumber, firstName, lastName, email, password } = req.body;
+  const { phoneNumber, firstName, lastName, email, password, uid } = req.body;
 
-  const updatedData: Partial<User> = { phoneNumber, firstName, lastName, email };
+  const updatedData: Partial<User> = { phoneNumber, firstName, lastName, email, password };
 
   if (password) {
+    // if a user is giving password then he is also giving email so here we need to create email / password provider in
+    // firebase as well
     updatedData.password = await bcrypt.hash(password, 12);
   }
+  let updatedUser: User | undefined = req.user;
 
-  const updatedUser: User = await prisma.user.update({
-    where: { id },
-    data: updatedData,
+  console.log(email, password);
+  if (email || password) {
+    await prisma.$transaction(async () => {
+      const updatedUserObject: { email?: string; password?: string } = {};
+      if (email) updatedUserObject.email = email;
+      if (password) updatedUserObject.password = password;
+      await auth.updateUser(uid, updatedUserObject);
+      if (email) updatedData.isEmailVerified = false;
+      updatedUser = await prisma.user.update({
+        where: { id },
+        data: updatedData,
+      });
+    });
+  } else {
+    updatedUser = await prisma.user.update({
+      where: { id },
+      data: updatedData,
+    });
+  }
+  if (updatedUser === undefined) {
+    res.status(500).json({
+      status: 'fail',
+    });
+  } else {
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: updatedUser,
+      },
+    });
+  }
+});
+
+const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id, email } = req.user as User;
+
+  if (!email) {
+    return next(new AppError(`User doesn't have an email id yet`, 404));
+  }
+
+  const currentUsers = await prisma.user.findMany({
+    where: { email: email, id: { not: id } }, // Exclude the current user's ID
+  });
+
+  if (currentUsers.length > 0) {
+    if (currentUsers.length === 1)
+      return next(new AppError('email id already being used , please select something else', 404));
+    else {
+      // this else block should never happend
+      return next(new AppError(`this email is already present with multiple users , please check database`, 404));
+    }
+  }
+
+  const actionCodeSettings = {
+    // URL you want to redirect back to. The domain (www.example.com) for this
+    // URL must be in the authorized domains list in the Firebase Console.
+    url: `http://localhost:3001/profile?verifyEmailId=${id}`,
+    // This must be true.
+    handleCodeInApp: true,
+  };
+
+  const result = await auth.generateEmailVerificationLink(email, actionCodeSettings);
+  console.log(result);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      redirectLink: result,
+    },
+  });
+});
+
+const confirmUserEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id }: { id: string } = req.body as { id: string };
+  console.log(id);
+  const updatedUser = await prisma.user.update({
+    where: { id: id }, // Exclude the current user's ID
+    data: {
+      isEmailVerified: true,
+    },
   });
 
   res.status(200).json({
     status: 'success',
     data: {
-      user: updatedUser,
+      updatedUser: updatedUser,
     },
   });
 });
@@ -147,4 +242,4 @@ const deleteUser = catchAsync(async (req: Request, res: Response, next: NextFunc
   });
 });
 
-export default { createUser, getUser, updateUser, deleteUser, updateProfile };
+export default { createUser, getUser, updateUser, deleteUser, updateProfile, verifyEmail, confirmUserEmail };

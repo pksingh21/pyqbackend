@@ -30,6 +30,16 @@ const routeConfig: { [key: string]: RouteConfig } = {
     path: '/:id',
     authLevel: 'admin',
   },
+  verifyEmail: {
+    method: 'post',
+    path: '/verifyEmail',
+    authLevel: 'user',
+  },
+  confirmUserEmail: {
+    method: 'post',
+    path: '/confirmUserEmail',
+    authLevel: 'user',
+  },
 };
 
 const router = loadRouter(routeConfig, userController, userValidator);

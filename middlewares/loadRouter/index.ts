@@ -19,7 +19,7 @@ const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any
       return new AppError(`controller for '${routeName}' not defined`, 500);
     }
 
-    if (routeValidator) {
+    if (routeValidator && authLevel) {
       router[method](
         path,
         routeNameLogger(routeName),
@@ -27,8 +27,10 @@ const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any
         validateRequest(routeValidator, routeName),
         routeController
       );
-    } else {
+    } else if (authLevel) {
       router[method](path, routeNameLogger(routeName), protectAuthLevel(authLevel), routeController);
+    } else {
+      router[method](path, routeNameLogger(routeName), routeController);
     }
   });
 

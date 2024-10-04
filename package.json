@@ -4,8 +4,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon  --ext \"ts\" --exec \"npm run build && node ./JSBuild/server.js\"",
-    "start": "node dist/server.js",
+    "dev": "nodemon --ext 'ts' --exec 'npm run build && npm run start'",
+    "start": "node ./JSBuild/server.js",
     "prebuild": "tsc --noEmit",
     "type-check": "tsc --noEmit ",
     "lint": " eslint . ",

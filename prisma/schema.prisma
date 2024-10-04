@@ -39,7 +39,7 @@ model User {
   interested    Tag[]    @relation("UserInterestedTags")
   password      String?
   isAdmin       Boolean  @default(false)
-
+  isEmailVerified Boolean @default(false)
   createdTags                 Tag[]
   createdQuestions            Question[]
   createdQuestionChoices      QuestionChoice[]
