@@ -9,7 +9,7 @@ import { protectAuthLevel } from '../../controllers/authController';
 
 const router = express.Router();
 
-const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any, validator: any) => {
+const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any, validator: any = {}) => {
   Object.keys(routeConfig).forEach((routeName: string) => {
     const { method, path, authLevel } = routeConfig[routeName];
     const routeController = controller[routeName];

@@ -9,20 +9,22 @@ const createPaper = catchAsync(async (req: Request, res: Response, next: NextFun
   const { paper }: { paper: Paper } = req.body;
   const user = (req as any).user as User;
 
-  const newPaper = await prisma.paper.create({
-    data: {
-      title: paper.title,
-      isModule: paper.isModule,
-      duration: paper.duration,
-      createdBy: {
-        connect: {
-          id: user.id,
-        },
-      },
-    },
-  });
+  console.log({ paper });
 
-  res.status(201).json({ message: 'Paper created', paper: newPaper });
+  // const newPaper = await prisma.paper.create({
+  //   data: {
+  //     title: paper.title,
+  //     isModule: paper.isModule,
+  //     duration: paper.duration,
+  //     createdBy: {
+  //       connect: {
+  //         id: user.id,
+  //       },
+  //     },
+  //   },
+  // });
+
+  // res.status(201).json({ message: 'Paper created', paper: newPaper });
 });
 
 const getPaper = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -108,4 +110,4 @@ const deletePaper = catchAsync(async (req: Request, res: Response, next: NextFun
   res.status(204).send();
 });
 
-export { createPaper, getPaper, updatePaper, deletePaper, updateTagsForPaper };
+export default { createPaper, getPaper, updatePaper, deletePaper, updateTagsForPaper };
