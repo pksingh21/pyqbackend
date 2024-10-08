@@ -1,4 +1,4 @@
-import express, { RequestHandler } from 'express';
+import { Router } from 'express';
 import RouteConfig from '../../types/RouteConfig';
 
 import AppError from '../../utils/appError';
@@ -7,9 +7,9 @@ import { validateRequest, routeNameLogger } from '..';
 
 import { protectAuthLevel } from '../../controllers/authController';
 
-const router = express.Router();
-
 const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any, validator: any = {}) => {
+  const router = Router();
+
   Object.keys(routeConfig).forEach((routeName: string) => {
     const { method, path, authLevel } = routeConfig[routeName];
     const routeController = controller[routeName];
