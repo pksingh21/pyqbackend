@@ -13,11 +13,11 @@ const createPaperQuestion = catchAsync(async (req: Request, res: Response, next:
       id: paperQuestion.paperId,
     },
   });
-  const question = await prisma.question.findUnique({
-    where: {
-      id: paperQuestion.questionId,
-    },
-  });
+  // const question = await prisma.question.findUnique({
+  //   where: {
+  //     id: paperQuestion.questionId,
+  //   },
+  // });
   // // if (paper && question) {
   // //   const newPaperQuestion = await prisma.paperQuestion.create({
   // //     data: {

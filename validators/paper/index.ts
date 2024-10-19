@@ -10,6 +10,10 @@ const paperValidator = {
   getPaper: {
     params: requestDTO.GetPaperParamsDTO,
   },
+  // Get paper by page and limit (query param)
+  getPapers: {
+    query: requestDTO.GetPapersQueryDTO,
+  },
   // Update a paper by ID (route param) with optional fields in the body
   updatePaper: {
     params: requestDTO.UpdatePaperParamsDTO,

@@ -2,29 +2,44 @@ import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, Paper, User } from '@prisma/client';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
+import { CreatePaperDTO } from '../dtos';
 
 const prisma = new PrismaClient();
 
 const createPaper = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { paper }: { paper: Paper } = req.body;
+  const { paper }: { paper: CreatePaperDTO } = req.body;
   const user = (req as any).user as User;
 
   console.log({ paper });
 
-  // const newPaper = await prisma.paper.create({
-  //   data: {
-  //     title: paper.title,
-  //     isModule: paper.isModule,
-  //     duration: paper.duration,
-  //     createdBy: {
-  //       connect: {
-  //         id: user.id,
-  //       },
-  //     },
-  //   },
-  // });
+  const newPaper = await prisma.paper.create({
+    data: {
+      title: paper.title,
+      isModule: paper.isModule,
+      duration: paper.duration ?? 120,
+      createdBy: {
+        connect: {
+          id: user.id,
+        },
+      },
+    },
+  });
 
-  // res.status(201).json({ message: 'Paper created', paper: newPaper });
+  const questionData = Array.from({ length: paper.questionCount }).map(() => ({
+    questionOrder: 0, // placeholder values
+    paperId: newPaper.id, // associate with the newly created paper
+    createdById: user.id,
+    correctMarks: 0,
+    incorrectMarks: 0,
+  }));
+
+  await prisma.paperQuestion.createMany({
+    data: questionData,
+  });
+
+  // console.log({ newPaper });
+
+  res.status(201).json({ message: 'Paper created', paper: newPaper });
 });
 
 const getPaper = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -32,11 +47,26 @@ const getPaper = catchAsync(async (req: Request, res: Response, next: NextFuncti
 
   const paper = await prisma.paper.findUnique({
     where: { id },
+    include: {
+      questions: {
+        include: {
+          question: true, // Populate the actual Question inside each PaperQuestion
+        },
+      },
+    },
   });
 
   if (!paper) return next(new AppError('Paper not found', 404));
 
+  console.dir({ paper }, { depth: null, color: true });
+
   res.status(200).json({ paper });
+});
+
+const getPaperCount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const paperCount = await prisma.paper.count();
+
+  res.status(200).json({ count: paperCount });
 });
 
 const updatePaper = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -110,4 +140,4 @@ const deletePaper = catchAsync(async (req: Request, res: Response, next: NextFun
   res.status(204).send();
 });
 
-export default { createPaper, getPaper, updatePaper, deletePaper, updateTagsForPaper };
+export default { createPaper, getPaper, updatePaper, deletePaper, updateTagsForPaper, getPaperCount };

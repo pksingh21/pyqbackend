@@ -10,9 +10,19 @@ const routeConfig: { [key: string]: RouteConfig } = {
     path: '/',
     authLevel: 'admin',
   },
+  getPaperCount: {
+    method: 'get',
+    path: '/count',
+    authLevel: 'admin',
+  },
   getPaper: {
     method: 'get',
     path: '/:id',
+    authLevel: 'admin',
+  },
+  getPapers: {
+    method: 'get',
+    path: '/',
     authLevel: 'admin',
   },
   updatePaper: {
