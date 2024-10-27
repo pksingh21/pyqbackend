@@ -1,6 +1,7 @@
 .env
 node_modules
 JsBuild
+JSBuild
 
 serviceAccountKey.json
 ./scripts/response.json

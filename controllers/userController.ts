@@ -146,40 +146,51 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 });
 
 const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { id, email } = req.user as User;
+  const { email } = req.user as User;
 
   if (!email) {
     return next(new AppError(`User doesn't have an email id yet`, 404));
   }
 
   const currentUsers = await prisma.user.findMany({
-    where: { email: email, id: { not: id } }, // Exclude the current user's ID
+    where: { email: email },
   });
 
   if (currentUsers.length > 0) {
     if (currentUsers.length === 1)
-      return next(new AppError('email id already being used , please select something else', 404));
+      if (currentUsers[0].isEmailVerified)
+        res.status(200).json({
+          status: 'success',
+          data: {
+            isEmailVerified: true
+          }
+        });
+      else {
+        const actionCodeSettings = {
+          url: `http://localhost:3001/login?email=${email}`,
+          handleCodeInApp: true,
+        };
+
+        const result = await auth.generateEmailVerificationLink(email, actionCodeSettings);
+        console.log(result);
+
+        res.status(200).json({
+          status: 'success',
+          data: {
+            redirectLink: result,
+            isEmailVerified: true
+          },
+        });
+      }
     else {
-      // this else block should never happend
       return next(new AppError(`this email is already present with multiple users , please check database`, 404));
     }
   }
-
-  const actionCodeSettings = {
-    // URL you want to redirect back to. The domain (www.example.com) for this
-    // URL must be in the authorized domains list in the Firebase Console.
-    url: `http://localhost:3001/profile?verifyEmailId=${id}`,
-    // This must be true.
-    handleCodeInApp: true,
-  };
-
-  const result = await auth.generateEmailVerificationLink(email, actionCodeSettings);
-  console.log(result);
-
   res.status(200).json({
     status: 'success',
     data: {
-      redirectLink: result,
+      redirectLink: false,
+      isEmailVerified: true
     },
   });
 });
