@@ -162,8 +162,8 @@ const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFun
         res.status(200).json({
           status: 'success',
           data: {
-            isEmailVerified: true
-          }
+            isEmailVerified: true,
+          },
         });
       else {
         const actionCodeSettings = {
@@ -178,7 +178,7 @@ const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFun
           status: 'success',
           data: {
             redirectLink: result,
-            isEmailVerified: true
+            isEmailVerified: true,
           },
         });
       }
@@ -190,7 +190,7 @@ const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFun
     status: 'success',
     data: {
       redirectLink: false,
-      isEmailVerified: true
+      isEmailVerified: true,
     },
   });
 });
