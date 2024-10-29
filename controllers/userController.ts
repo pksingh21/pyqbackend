@@ -146,7 +146,7 @@ const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunc
 });
 
 const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { email } = req.user as User;
+  const { email }: { email: string } = req.body as { email: string };
 
   if (!email) {
     return next(new AppError(`User doesn't have an email id yet`, 404));
@@ -157,41 +157,21 @@ const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFun
   });
 
   if (currentUsers.length > 0) {
-    if (currentUsers.length === 1)
-      if (currentUsers[0].isEmailVerified)
+    if (currentUsers.length === 1) {
+      if (currentUsers[0].isEmailVerified && currentUsers[0].password?.length != 0)
         res.status(200).json({
           status: 'success',
-          data: {
-            isEmailVerified: true,
-          },
+          isEmailVerified: true,
         });
-      else {
-        const actionCodeSettings = {
-          url: `http://localhost:3001/login?email=${email}`,
-          handleCodeInApp: true,
-        };
-
-        const result = await auth.generateEmailVerificationLink(email, actionCodeSettings);
-        console.log(result);
-
-        res.status(200).json({
-          status: 'success',
-          data: {
-            redirectLink: result,
-            isEmailVerified: true,
-          },
-        });
-      }
+    }
     else {
       return next(new AppError(`this email is already present with multiple users , please check database`, 404));
     }
   }
+
   res.status(200).json({
     status: 'success',
-    data: {
-      redirectLink: false,
-      isEmailVerified: true,
-    },
+    isEmailVerified: false,
   });
 });
 

@@ -33,7 +33,6 @@ const routeConfig: { [key: string]: RouteConfig } = {
   verifyEmail: {
     method: 'post',
     path: '/verifyEmail',
-    authLevel: 'user',
   },
   confirmUserEmail: {
     method: 'post',
