@@ -53,96 +53,59 @@ const getUser = catchAsync(async (req: Request, res: Response, next: NextFunctio
 
 // Update profile of user
 const updateProfile = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-  const { user }: { user: User } = req.body;
-  let { firstName, lastName, email, password, uid, id } = user;
-  if (password) {
-    // if a user is giving password then he is also giving email so here we need to create email / password provider in
-    // firebase as well
-    password = await bcrypt.hash(password, 12);
-  }
+  const { id } = req.user as User;
+  const { user: userData } = req.body;
 
-  const updatedData: Partial<User> = { firstName, lastName, email, password };
-  let updatedUser: User | undefined = user;
-  if (email || password) {
-    await prisma.$transaction(async () => {
-      const updatedUserObject: { email?: string; password?: string } = {};
-      if (email) {
-        updatedUserObject.email = email;
-        updatedData.isEmailVerified = false;
-      }
-      if (password) updatedUserObject.password = password;
+  const updatableFields: (keyof User)[] = ['firstName', 'lastName', 'email'];
 
-      await auth.updateUser(uid, updatedUserObject);
-      updatedUser = await prisma.user.update({
-        where: { id },
-        data: updatedData,
-      });
-    });
-  } else {
-    updatedUser = await prisma.user.update({
-      where: { id },
-      data: updatedData,
-    });
-  }
-  if (updatedUser === undefined) {
-    res.status(500).json({
-      status: 'fail',
-    });
-  } else {
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: updatedUser,
-      },
-    });
-  }
+  const fieldsToBeUpdated = updatableFields.filter((field) => {
+    const a = req.user![field];
+    const b = userData[field];
+    if (a !== b) {
+      if ((a == null || a === '') && (b == null || b == '')) return false;
+      return true;
+    }
+    return false;
+  });
+
+  const data: Partial<User> = {};
+  fieldsToBeUpdated.forEach((field) => (data[field] = userData[field]));
+
+  const updatedUser: User = await prisma.user.update({
+    where: { id },
+    data,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
 });
 
 // Update a user by ID
 const updateUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  const { phoneNumber, firstName, lastName, email, password, uid } = req.body;
+  const { phoneNumber, firstName, lastName, email, password } = req.body;
 
-  const updatedData: Partial<User> = { phoneNumber, firstName, lastName, email, password };
+  const updatedData: Partial<User> = { phoneNumber, firstName, lastName, email };
 
   if (password) {
-    // if a user is giving password then he is also giving email so here we need to create email / password provider in
-    // firebase as well
     updatedData.password = await bcrypt.hash(password, 12);
   }
-  let updatedUser: User | undefined = req.user;
 
-  console.log(email, password);
-  if (email || password) {
-    await prisma.$transaction(async () => {
-      const updatedUserObject: { email?: string; password?: string } = {};
-      if (email) updatedUserObject.email = email;
-      if (password) updatedUserObject.password = password;
-      await auth.updateUser(uid, updatedUserObject);
-      if (email) updatedData.isEmailVerified = false;
-      updatedUser = await prisma.user.update({
-        where: { id },
-        data: updatedData,
-      });
-    });
-  } else {
-    updatedUser = await prisma.user.update({
-      where: { id },
-      data: updatedData,
-    });
-  }
-  if (updatedUser === undefined) {
-    res.status(500).json({
-      status: 'fail',
-    });
-  } else {
-    res.status(200).json({
-      status: 'success',
-      data: {
-        user: updatedUser,
-      },
-    });
-  }
+  const updatedUser: User = await prisma.user.update({
+    where: { id },
+    data: updatedData,
+  });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      user: updatedUser,
+    },
+  });
 });
 
 const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -163,8 +126,7 @@ const verifyEmail = catchAsync(async (req: Request, res: Response, next: NextFun
           status: 'success',
           isEmailVerified: true,
         });
-    }
-    else {
+    } else {
       return next(new AppError(`this email is already present with multiple users , please check database`, 404));
     }
   }
