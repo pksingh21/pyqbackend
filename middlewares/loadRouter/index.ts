@@ -16,7 +16,7 @@ const loadRouter = (routeConfig: { [key: string]: RouteConfig }, controller: any
     const routeValidator = validator[routeName];
 
     if (!routeController) {
-      return new AppError(`controller for '${routeName}' not defined`, 500);
+      throw new AppError(`controller for '${routeName}' not defined`, 500);
     }
 
     if (routeValidator && authLevel) {

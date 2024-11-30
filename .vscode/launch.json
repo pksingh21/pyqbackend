@@ -1,0 +1,19 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Attach Debugger",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "protocol": "inspector",
+      "address": "localhost",
+      "localRoot": "${workspaceFolder}",
+      "remoteRoot": "${workspaceFolder}",
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/JSBuild/**/*.js"],
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]
+}

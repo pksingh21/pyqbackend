@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --ext \"ts\" --exec \"npm run build && npm run start\"",
+    "dev": "nodemon --ext ts --exec \"npm run build && npm run start\"",
+    "debug": "nodemon --ext ts --exec \"npm run build && node --inspect=9229 ./JSBuild/server.js\"",
     "start": "node ./JSBuild/server.js",
     "prebuild": "tsc --noEmit",
     "type-check": "tsc --noEmit ",

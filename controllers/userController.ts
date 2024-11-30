@@ -3,7 +3,6 @@ import { PrismaClient, User } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
-import { auth } from '../firebase';
 
 const prisma = new PrismaClient();
 
@@ -150,7 +149,7 @@ const confirmUserEmail = catchAsync(async (req: Request, res: Response, next: Ne
   res.status(200).json({
     status: 'success',
     data: {
-      updatedUser: updatedUser,
+      user: updatedUser,
     },
   });
 });

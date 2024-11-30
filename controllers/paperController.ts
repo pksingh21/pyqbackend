@@ -63,6 +63,40 @@ const getPaper = catchAsync(async (req: Request, res: Response, next: NextFuncti
   res.status(200).json({ paper });
 });
 
+const getPapers = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { page, limit } = req.query;
+
+  const pageNumber = parseInt(page as string, 10) || 1;
+  const limitNumber = parseInt(limit as string, 10) || 10;
+  const skip = (pageNumber - 1) * limitNumber;
+
+  const papers = await prisma.paper.findMany({
+    skip,
+    take: limitNumber,
+    include: {
+      _count: {
+        select: {
+          questions: true,
+        },
+      },
+    },
+  });
+
+  if (!papers.length) {
+    return next(new AppError('No papers found', 404));
+  }
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Papers fetched successfully',
+    data: {
+      papers,
+      page,
+      limit,
+    },
+  });
+});
+
 const getPaperCount = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const paperCount = await prisma.paper.count();
 
@@ -140,4 +174,4 @@ const deletePaper = catchAsync(async (req: Request, res: Response, next: NextFun
   res.status(204).send();
 });
 
-export default { createPaper, getPaper, updatePaper, deletePaper, updateTagsForPaper, getPaperCount };
+export default { createPaper, getPaper, getPapers, updatePaper, deletePaper, updateTagsForPaper, getPaperCount };
