@@ -4,14 +4,10 @@ import { protect, protectAuthLevel } from '../controllers/authController';
 
 const router = Router();
 
-router.post('/', protectAuthLevel('admin'), createTest);
+router.post('/start', protectAuthLevel('user'), createTest);
 router.get('/:id', protectAuthLevel('user'), getTest);
 router.patch('/:id', protectAuthLevel('admin'), updateTest);
-router.get(
-    '/paper/:paperId/user-tests',
-    protectAuthLevel('user'),
-    getUserTestsForPaper
-  );
+router.get('/paper/:paperId', protectAuthLevel('user'), getUserTestsForPaper);
 
 router.delete('/:id', protectAuthLevel('admin'), deleteTest);
 

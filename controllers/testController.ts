@@ -41,11 +41,54 @@ const getTest = catchAsync(async (req: Request, res: Response, next: NextFunctio
 
   const test = await prisma.test.findUnique({
     where: { id },
+    include: {
+      paper: true,
+      questionStatuses: {
+        include: {
+          question: {
+            include: {
+              choices: true,
+            },
+          },
+          choices: true,
+        },
+      },
+    },
   });
 
-  if (!test) return next(new AppError('Test not found', 404));
+  if (!test) {
+    return next(new AppError('Test not found', 404));
+  }
 
   res.status(200).json({ test });
+});
+
+const saveAnswer = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { questionStatusId, choiceId } = req.body;
+
+  await prisma.testQuestionStatus.update({
+    where: { id: questionStatusId },
+    data: {
+      choices: {
+        set: [{ id: choiceId }],
+      },
+    },
+  });
+
+  res.status(200).json({ message: 'Answer saved successfully' });
+})
+
+const submitTest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+
+  await prisma.test.update({
+    where: { id },
+    data: {
+      // status: 'COMPLETED',
+    },
+  });
+
+  res.status(200).json({ message: 'Test submitted successfully' });
 });
 
 const updateTest = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -126,5 +169,7 @@ const getUserTestsForPaper = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 };
+
+
 
 export { createTest, getTest, updateTest, deleteTest, getUserTestsForPaper };
