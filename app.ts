@@ -43,6 +43,7 @@ if (process.env.USE_CORS) {
   app.use(cors(corsOptions));
 }
 
+// ROUTES 🇺🇸
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/tags', tagRoutes);

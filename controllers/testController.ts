@@ -101,4 +101,30 @@ const deleteTest = catchAsync(async (req: Request, res: Response, next: NextFunc
   res.status(204).send();
 });
 
-export { createTest, getTest, updateTest, deleteTest };
+// this function gets past test attempts for user for a particular 🐋(paper).
+const getUserTestsForPaper = async (req: Request, res: Response) => {
+  const user = (req as any).user as User;
+  const paperId = req.params.paperId;
+
+  try {
+    const tests = await prisma.test.findMany({
+      where: {
+        createdById: user.id,
+        paperId: paperId,
+      },
+      orderBy: {
+        startTime: 'desc',
+      },
+      include: {
+        paper: true,
+      },
+    });
+
+    res.status(200).json({ tests });
+  } catch (error) {
+    console.error('Error fetching user tests:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+};
+
+export { createTest, getTest, updateTest, deleteTest, getUserTestsForPaper };
