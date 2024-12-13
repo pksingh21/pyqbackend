@@ -19,6 +19,10 @@ const paperValidator = {
     params: requestDTO.UpdatePaperParamsDTO,
     body: requestDTO.UpdatePaperDTO,
   },
+  updatePaperQuestion: {
+    params: requestDTO.UpdatePaperQuestionParamsDTO,
+    body: requestDTO.UpdatePaperQuestionDTO,
+  },
   // Update tags for a paper by ID (route param)
   updateTagsForPaper: {
     params: requestDTO.UpdatePaperParamsDTO,

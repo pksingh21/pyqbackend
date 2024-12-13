@@ -1,6 +1,28 @@
 // schema.ts
 import Joi from 'joi';
 
+export const ChoiceDTO = Joi.object({
+  id: Joi.string().required(),
+  text: Joi.string().required(),
+  isAnswer: Joi.boolean().required(),
+  choiceOrder: Joi.number().min(1).required(),
+  createdAt: Joi.any().strip(),
+  lastUpdatedAt: Joi.any().strip(),
+  createdById: Joi.any().strip(),
+  questionId: Joi.any().strip(),
+});
+
+export const QuestionDTO = Joi.object({
+  id: Joi.string().required(),
+  text: Joi.string().required(),
+  choices: Joi.array().items(ChoiceDTO).min(2).required(),
+  images: Joi.array(),
+  isMultiCorrect: Joi.boolean().required(),
+  createdAt: Joi.any().strip(),
+  lastUpdatedAt: Joi.any().strip(),
+  createdById: Joi.any().strip(),
+});
+
 // Schema for creating a paper
 export const CreatePaperDTO = Joi.object({
   paper: Joi.object({
@@ -33,6 +55,17 @@ export const UpdatePaperDTO = Joi.object({
   title: Joi.string().optional(),
   isModule: Joi.boolean().optional(),
   duration: Joi.number().integer().min(1).optional(),
+});
+
+// Schema for updating a question in a paper by ID (route param)
+export const UpdatePaperQuestionParamsDTO = Joi.object({
+  id: Joi.string().required(),
+  questionNumber: Joi.string().required(),
+});
+
+// Schema for updating a question in a paper by ID (body)
+export const UpdatePaperQuestionDTO = Joi.object({
+  question: QuestionDTO.required(),
 });
 
 // Schema for updating tags for a paper

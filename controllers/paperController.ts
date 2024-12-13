@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { PrismaClient, Paper, User } from '@prisma/client';
 import catchAsync from '../utils/catchAsync';
 import AppError from '../utils/appError';
-import { CreatePaperDTO } from '../dtos';
+import { ChoiceDTO, CreatePaperDTO, QuestionDTO } from '../dtos';
 
 const prisma = new PrismaClient();
 
@@ -174,4 +174,169 @@ const deletePaper = catchAsync(async (req: Request, res: Response, next: NextFun
   res.status(204).send();
 });
 
-export default { createPaper, getPaper, getPapers, updatePaper, deletePaper, updateTagsForPaper, getPaperCount };
+const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  const { id, questionNumber: questionNumberString } = req.params; // Paper ID
+  const { question }: { question: QuestionDTO } = req.body;
+
+  const questionNumber = parseInt(questionNumberString);
+
+  console.log({ paperId: id, question });
+
+  const paper = await prisma.paper.findUnique({
+    where: { id },
+    include: {
+      questions: true, // Include related PaperQuestions to verify
+    },
+  });
+
+  if (!paper) {
+    return next(new AppError('Paper not found', 404));
+  }
+
+  console.log('Paper found');
+
+  // Check if the question is associated with this paper
+  const existingPaperQuestion = paper.questions.find((paperQuestion) => paperQuestion.questionId === question.id);
+
+  const user = (req as any).user as User;
+
+  if (existingPaperQuestion) {
+    console.log('Updating existing question');
+    // Update the existing question and its choices
+    const updatedQuestion = await prisma.question.update({
+      where: { id: question.id },
+      data: {
+        text: question.text,
+        isMultiCorrect: question.isMultiCorrect,
+      },
+      include: { choices: true }, // Include existing choices for comparison
+    });
+
+    const existingChoices = updatedQuestion.choices;
+
+    // Determine choices to update, create, or delete
+    const choicesToUpdate: ChoiceDTO[] = [];
+    const choicesToCreate: ChoiceDTO[] = [];
+    const choicesToDelete: string[] = [];
+
+    question.choices.forEach((newChoice) => {
+      const matchingChoice = existingChoices.find((c) => c.id === newChoice.id);
+      if (matchingChoice) {
+        // Update if the data has changed
+        if (
+          matchingChoice.text !== newChoice.text ||
+          matchingChoice.isAnswer !== newChoice.isAnswer ||
+          matchingChoice.choiceOrder !== newChoice.choiceOrder
+        ) {
+          choicesToUpdate.push(newChoice);
+        }
+      } else {
+        // Create new choice
+        choicesToCreate.push(newChoice);
+      }
+    });
+
+    // Find choices to delete
+    existingChoices.forEach((existingChoice) => {
+      if (!question.choices.find((newChoice) => newChoice.id === existingChoice.id)) {
+        choicesToDelete.push(existingChoice.id);
+      }
+    });
+
+    // Execute updates, creations, and deletions for choices
+    await Promise.all(
+      choicesToUpdate.map((choice) =>
+        prisma.questionChoice.update({
+          where: { id: choice.id },
+          data: {
+            text: choice.text,
+            isAnswer: choice.isAnswer,
+            choiceOrder: choice.choiceOrder,
+          },
+        })
+      )
+    );
+
+    await prisma.questionChoice.createMany({
+      data: choicesToCreate.map((choice) => ({
+        text: choice.text,
+        isAnswer: choice.isAnswer,
+        choiceOrder: choice.choiceOrder,
+        questionId: question.id,
+        createdById: user.id,
+      })),
+    });
+
+    await prisma.questionChoice.deleteMany({
+      where: {
+        id: { in: choicesToDelete },
+      },
+    });
+
+    return res.status(200).json({
+      message: 'Question updated successfully',
+      question: {
+        ...updatedQuestion,
+        choices: await prisma.questionChoice.findMany({
+          where: { questionId: question.id },
+          orderBy: { choiceOrder: 'asc' },
+        }),
+      },
+    });
+  } else {
+    console.log('Creating new question');
+    // Create a new question and associate it with the paper
+    const newQuestion = await prisma.question.create({
+      data: {
+        text: question.text,
+        isMultiCorrect: question.isMultiCorrect,
+        createdBy: {
+          connect: { id: user.id },
+        },
+      },
+    });
+
+    await prisma.paperQuestion.create({
+      data: {
+        questionOrder: questionNumber,
+        paperId: id,
+        questionId: newQuestion.id,
+        createdById: user.id,
+      },
+    });
+
+    if (question.choices && question.choices.length > 0) {
+      await prisma.questionChoice.createMany({
+        data: question.choices.map((choice) => ({
+          text: choice.text,
+          isAnswer: choice.isAnswer,
+          choiceOrder: choice.choiceOrder,
+          questionId: newQuestion.id,
+          createdById: user.id,
+        })),
+      });
+    }
+
+    return res.status(201).json({
+      message: 'Question added successfully',
+      question: {
+        ...newQuestion,
+        choices: await prisma.questionChoice.findMany({
+          where: { questionId: newQuestion.id },
+          orderBy: { choiceOrder: 'asc' },
+        }),
+      },
+    });
+  }
+});
+
+export default {
+  createPaper,
+  getPaper,
+  getPapers,
+  updatePaper,
+  deletePaper,
+  updateTagsForPaper,
+  getPaperCount,
+  updatePaperQuestion,
+};

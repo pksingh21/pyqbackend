@@ -27,6 +27,11 @@ const routeConfig: { [key: string]: RouteConfig } = {
     path: '/:id',
     authLevel: 'admin',
   },
+  updatePaperQuestion: {
+    method: 'post',
+    path: '/:id/question/:questionNumber',
+    authLevel: 'admin',
+  },
   deletePaper: {
     method: 'delete',
     path: '/:id',
