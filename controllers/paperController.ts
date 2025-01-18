@@ -227,138 +227,119 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
 
   if (updateExistingQuestion) {
     console.log('Updating existing question');
-    // Update the existing question and its choices
-    const updatedQuestion = await prisma.question.update({
-      where: {
-        id: questionId,
-      },
-      data: {
-        text: question.text,
-        isMultiCorrect: question.isMultiCorrect,
-      },
-      include: { choices: true }, // Include existing choices for comparison
-    });
 
-    const existingChoices = updatedQuestion.choices;
+    // Use transaction to handle all database operations
+    const result = await prisma.$transaction(async (tx) => {
+      // First get existing choices
+      const existingChoices = await tx.questionChoice.findMany({
+        where: { questionId: questionId },
+        select: { id: true },
+      });
+      const existingChoiceIds = new Set(existingChoices.map((c) => c.id));
 
-    // Determine choices to update, create, or delete
-    const choicesToUpdate: ChoiceDTO[] = [];
-    const choicesToCreate: ChoiceDTO[] = [];
-    const choicesToDelete: string[] = [];
-
-    question.choices.forEach((newChoice) => {
-      const matchingChoice = existingChoices.find((c) => c.id === newChoice.id);
-      if (matchingChoice) {
-        // Update if the data has changed
-        if (
-          matchingChoice.text !== newChoice.text ||
-          matchingChoice.isAnswer !== newChoice.isAnswer ||
-          matchingChoice.choiceOrder !== newChoice.choiceOrder
-        ) {
-          choicesToUpdate.push(newChoice);
-        }
-      } else {
-        // Create new choice
-        choicesToCreate.push(newChoice);
-      }
-    });
-
-    // Find choices to delete
-    existingChoices.forEach((existingChoice) => {
-      if (!question.choices.find((newChoice) => newChoice.id === existingChoice.id)) {
-        choicesToDelete.push(existingChoice.id);
-      }
-    });
-
-    // Execute updates, creations, and deletions for choices
-    await Promise.all(
-      choicesToUpdate.map((choice) =>
-        prisma.questionChoice.update({
-          where: {
-            id: choice.id,
+      // Update the question
+      const updatedQuestion = await tx.question.update({
+        where: { id: questionId },
+        data: {
+          text: question.text,
+          isMultiCorrect: question.isMultiCorrect,
+          choices: {
+            // Delete choices that are not in the new set
+            deleteMany: {
+              id: {
+                notIn: question.choices.map((choice) => choice.id as string),
+              },
+            },
+            // Update existing choices
+            updateMany: question.choices
+              .filter((choice) => existingChoiceIds.has(choice.id as string))
+              .map((choice) => ({
+                where: { id: choice.id },
+                data: {
+                  text: choice.text,
+                  isAnswer: choice.isAnswer,
+                  choiceOrder: choice.choiceOrder,
+                },
+              })),
+            // Create new choices (ones with IDs not in the database)
+            createMany: {
+              data: question.choices
+                .filter((choice) => !existingChoiceIds.has(choice.id as string))
+                .map((choice) => ({
+                  text: choice.text,
+                  isAnswer: choice.isAnswer,
+                  choiceOrder: choice.choiceOrder,
+                  createdById: user.id,
+                })),
+            },
           },
-          data: {
-            text: choice.text,
-            isAnswer: choice.isAnswer,
-            choiceOrder: choice.choiceOrder,
+        },
+        include: {
+          choices: {
+            orderBy: { choiceOrder: 'asc' },
           },
-        })
-      )
-    );
+        },
+      });
 
-    await prisma.questionChoice.createMany({
-      data: choicesToCreate.map((choice) => ({
-        text: choice.text,
-        isAnswer: choice.isAnswer,
-        choiceOrder: choice.choiceOrder,
-        questionId: questionId,
-        createdById: user.id,
-      })),
-    });
-
-    await prisma.questionChoice.deleteMany({
-      where: {
-        id: { in: choicesToDelete },
-      },
+      return updatedQuestion;
     });
 
     return res.status(200).json({
       message: 'Question updated successfully',
-      question: {
-        ...updatedQuestion,
-        choices: await prisma.questionChoice.findMany({
-          where: { questionId: question.id },
-          orderBy: { choiceOrder: 'asc' },
-        }),
-      },
+      question: result,
     });
   } else {
     console.log('Creating new question');
-    // Create a new question and associate it with the paper
-    const newQuestion = await prisma.question.create({
-      data: {
-        text: question.text,
-        isMultiCorrect: question.isMultiCorrect,
-        createdBy: {
-          connect: { id: user.id },
+
+    // Use transaction to ensure atomicity
+    const result = await prisma.$transaction(async (tx) => {
+      // Create question and its choices in one transaction
+      const newQuestion = await tx.question.create({
+        data: {
+          text: question.text,
+          isMultiCorrect: question.isMultiCorrect,
+          createdBy: {
+            connect: { id: user.id },
+          },
+          // Create choices inline with the question
+          choices: question.choices?.length
+            ? {
+                createMany: {
+                  data: question.choices.map((choice) => ({
+                    text: choice.text,
+                    isAnswer: choice.isAnswer,
+                    choiceOrder: choice.choiceOrder,
+                    createdById: user.id,
+                  })),
+                },
+              }
+            : undefined,
         },
-      },
-    });
-
-    console.log(`Linking this question as ${questionNumber} to paper ${id}`);
-
-    await prisma.paperQuestion.update({
-      where: {
-        id: paperQuestion.id,
-      },
-      data: {
-        questionId: newQuestion.id,
-      },
-    });
-
-    if (question.choices && question.choices.length > 0) {
-      await prisma.questionChoice.createMany({
-        data: question.choices.map((choice) => ({
-          text: choice.text,
-          isAnswer: choice.isAnswer,
-          choiceOrder: choice.choiceOrder,
-          questionId: newQuestion.id,
-          createdById: user.id,
-        })),
+        include: {
+          choices: {
+            orderBy: {
+              choiceOrder: 'asc',
+            },
+          },
+        },
       });
 
-      console.log('Choices created and linked to question -', newQuestion.id);
-    }
+      // Update the paper question with the new question ID
+      await tx.paperQuestion.update({
+        where: {
+          id: paperQuestion.id,
+        },
+        data: {
+          questionId: newQuestion.id,
+        },
+      });
+
+      return newQuestion;
+    });
 
     return res.status(201).json({
       message: 'Question added successfully',
-      question: {
-        ...newQuestion,
-        choices: await prisma.questionChoice.findMany({
-          where: { questionId: newQuestion.id },
-          orderBy: { choiceOrder: 'asc' },
-        }),
-      },
+      question: result,
     });
   }
 });
