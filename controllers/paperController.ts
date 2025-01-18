@@ -25,8 +25,8 @@ const createPaper = catchAsync(async (req: Request, res: Response, next: NextFun
     },
   });
 
-  const questionData = Array.from({ length: paper.questionCount }).map(() => ({
-    questionOrder: 0, // placeholder values
+  const questionData = Array.from({ length: paper.questionCount }).map((_, index) => ({
+    questionOrder: index + 1,
     paperId: newPaper.id, // associate with the newly created paper
     createdById: user.id,
     correctMarks: 0,
@@ -49,8 +49,20 @@ const getPaper = catchAsync(async (req: Request, res: Response, next: NextFuncti
     where: { id },
     include: {
       questions: {
+        orderBy: {
+          questionOrder: 'asc',
+        },
         include: {
-          question: true, // Populate the actual Question inside each PaperQuestion
+          // Populate the actual Question inside each PaperQuestion
+          question: {
+            include: {
+              choices: {
+                orderBy: {
+                  choiceOrder: 'asc',
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -73,6 +85,9 @@ const getPapers = catchAsync(async (req: Request, res: Response, next: NextFunct
   const papers = await prisma.paper.findMany({
     skip,
     take: limitNumber,
+    orderBy: {
+      createdAt: 'desc',
+    },
     include: {
       _count: {
         select: {
@@ -196,15 +211,27 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
   console.log('Paper found');
 
   // Check if the question is associated with this paper
-  const existingPaperQuestion = paper.questions.find((paperQuestion) => paperQuestion.questionId === question.id);
+  const paperQuestion = paper.questions.find((pQuestion) => pQuestion.questionOrder === questionNumber);
 
+  console.log({ paperQuestion });
+
+  if (!paperQuestion) {
+    return next(new AppError('Something went wrong', 500));
+  }
+
+  const questionId = paperQuestion.questionId;
+  const updateExistingQuestion = questionId === question.id;
+
+  console.log({ updateExistingQuestion });
   const user = (req as any).user as User;
 
-  if (existingPaperQuestion) {
+  if (updateExistingQuestion) {
     console.log('Updating existing question');
     // Update the existing question and its choices
     const updatedQuestion = await prisma.question.update({
-      where: { id: question.id },
+      where: {
+        id: questionId,
+      },
       data: {
         text: question.text,
         isMultiCorrect: question.isMultiCorrect,
@@ -247,7 +274,9 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
     await Promise.all(
       choicesToUpdate.map((choice) =>
         prisma.questionChoice.update({
-          where: { id: choice.id },
+          where: {
+            id: choice.id,
+          },
           data: {
             text: choice.text,
             isAnswer: choice.isAnswer,
@@ -262,7 +291,7 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
         text: choice.text,
         isAnswer: choice.isAnswer,
         choiceOrder: choice.choiceOrder,
-        questionId: question.id,
+        questionId: questionId,
         createdById: user.id,
       })),
     });
@@ -296,12 +325,14 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
       },
     });
 
-    await prisma.paperQuestion.create({
+    console.log(`Linking this question as ${questionNumber} to paper ${id}`);
+
+    await prisma.paperQuestion.update({
+      where: {
+        id: paperQuestion.id,
+      },
       data: {
-        questionOrder: questionNumber,
-        paperId: id,
         questionId: newQuestion.id,
-        createdById: user.id,
       },
     });
 
@@ -315,6 +346,8 @@ const updatePaperQuestion = catchAsync(async (req: Request, res: Response, next:
           createdById: user.id,
         })),
       });
+
+      console.log('Choices created and linked to question -', newQuestion.id);
     }
 
     return res.status(201).json({
